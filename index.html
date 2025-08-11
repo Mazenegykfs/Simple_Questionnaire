@@ -292,7 +292,7 @@
         const messageBox = document.getElementById('messageBox');
         const messageText = document.getElementById('messageText');
         const exportButton = document.getElementById('exportButton');
-        const copyTableButton = document.getElementById('copyTableButton');
+        const copyTableButton = document.getElementById('copyTableButton'); // Fixed ID here
         const langToggle = document.getElementById('langToggle');
         const langEnSpan = document.getElementById('lang-en');
         const langArSpan = document.getElementById('lang-ar');
@@ -315,7 +315,7 @@
         const scaleOrderOptionsContainer = document.getElementById('scaleOrderOptionsContainer');
         const scaleOrderMessageBox = document.getElementById('scaleOrderMessageBox');
         const scaleOrderMessageText = document.getElementById('scaleOrderMessageText');
-        const scaleOrderMessageTitle = document.getElementById('scaleOrderMessageTitle');
+        const scaleOrderMessageTitle = document = document.getElementById('scaleOrderMessageTitle');
 
         // Domain message box elements (added missing references)
         const domainMessageBox = document.getElementById('domainMessageBox');
@@ -1277,10 +1277,10 @@
             tdOverallGrandTotal.textContent = `${overallTotalPercentageCheck.toFixed(2)}%`;
             overallTotalRow.appendChild(tdOverallGrandTotal);
 
-            const tdOverallPositives = document.createElement('td');
-            tdOverallPositives.className = 'px-4 py-2 text-center border-t border-gray-300 whitespace-nowrap';
-            tdOverallPositives.textContent = `${overallTotalPositivesPercentage.toFixed(2)}%`;
-            overallTotalRow.appendChild(tdOverallPositives);
+            const tdPositives = document.createElement('td');
+            tdPositives.className = 'px-4 py-2 text-center border-t border-gray-300 whitespace-nowrap';
+            tdPositives.textContent = `${overallTotalPositivesPercentage.toFixed(2)}%`; // Fixed: Use overallTotalPositivesPercentage
+            overallTotalRow.appendChild(tdPositives);
 
             tfoot.appendChild(overallTotalRow);
             table.appendChild(tfoot);
@@ -1340,26 +1340,27 @@
             positiveNegativeItemsContainer.appendChild(listSection);
         }
 
-        // Custom plugin to draw labels above bars and hide Y-axis grid lines
+        // Custom plugin to draw labels within bars and hide Y-axis grid lines
         const customBarLabelPlugin = {
             id: 'customBarLabels',
             afterDatasetsDraw(chart, args, options) {
                 const { ctx } = chart;
 
                 ctx.save();
-                ctx.font = 'bold 12px Inter';
-                ctx.fillStyle = '#374151'; // Dark gray color for labels
+                ctx.font = 'bold 12px Inter'; // Already bold
+                ctx.fillStyle = '#000000'; // Set to black for labels inside bars
                 ctx.textAlign = 'center';
-                ctx.textBaseline = 'bottom';
+                ctx.textBaseline = 'middle'; // Align text to the middle of the bar
 
                 chart.data.datasets.forEach((dataset, i) => {
                     const meta = chart.getDatasetMeta(i);
                     if (!meta.hidden) {
                         meta.data.forEach((element, index) => {
                             const dataValue = dataset.data[index];
-                            // Adjusted yPos to ensure label is fully visible above the bar
-                            const yPos = element.y - 35; // moved up by 35px from the top of the bar for better visibility
-                            ctx.fillText(`${dataValue}%`, element.x, yPos);
+                            // Position label in the middle of the bar
+                            const xPos = element.x;
+                            const yPos = element.y + (element.height / 2); // Center vertically within the bar
+                            ctx.fillText(`${dataValue}%`, xPos, yPos);
                         });
                     }
                 });
@@ -1386,7 +1387,7 @@
             chartSection.className = 'p-6 bg-gray-50 rounded-xl shadow-inner flex flex-col justify-center items-center';
 
             const chartTitleElem = document.createElement('h3');
-            chartTitleElem.className = 'text-lg font-semibold mb-4 text-gray-700';
+            chartTitleElem.className = 'text-lg font-bold mb-4 text-black'; // Changed to text-black
             chartTitleElem.textContent = title;
             chartSection.appendChild(chartTitleElem);
 
@@ -1423,23 +1424,43 @@
                     maintainAspectRatio: false,
                     layout: {
                         padding: {
-                            top: 40 // Add 40px padding at the top to make space for labels
+                            // Removed top padding as labels are now inside bars
                         }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
-                            stacked: isStacked // Apply stacking if true
+                            stacked: isStacked, // Apply stacking if true
+                            ticks: {
+                                font: {
+                                    weight: 'bold', // Y-axis labels bold
+                                    color: '#000000' // Y-axis labels black
+                                }
+                            }
                         },
                         x: {
                             grid: {
                                 display: false
                             },
-                            stacked: isStacked // Apply stacking if true
+                            stacked: isStacked, // Apply stacking if true
+                            ticks: {
+                                font: {
+                                    weight: 'bold', // X-axis labels bold
+                                    color: '#000000' // X-axis labels black
+                                }
+                            }
                         }
                     },
                     plugins: {
                         tooltip: {
+                            titleFont: {
+                                weight: 'bold', // Tooltip title bold
+                                color: '#000000' // Tooltip title black
+                            },
+                            bodyFont: {
+                                weight: 'bold', // Tooltip body bold
+                                color: '#000000' // Tooltip body black
+                            },
                             callbacks: {
                                 label: function(context) {
                                     let label = context.dataset.label || '';
@@ -1454,7 +1475,13 @@
                             }
                         },
                         legend: {
-                            display: isStacked // Display legend for stacked charts to show what each segment represents
+                            display: isStacked, // Display legend for stacked charts to show what each segment represents
+                            labels: {
+                                font: {
+                                    weight: 'bold', // Legend labels bold
+                                    color: '#000000' // Legend labels black
+                                }
+                            }
                         },
                         customBarLabels: { // Make sure plugin options are passed here
                             // No custom options needed for this, but structure is here
