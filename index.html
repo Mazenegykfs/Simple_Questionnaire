@@ -167,7 +167,10 @@
         <div id="domainSection" class="hidden w-full max-w-2xl mx-auto mb-8 p-6 bg-gray-50 rounded-lg shadow-inner">
             <h2 id="domainTitle" class="text-xl font-bold text-gray-700 mb-4">Define Domains (Optional)</h2>
             <p id="domainSubtitle" class="text-gray-600 mb-4">Enter the number of items for each domain, separated by commas (e.g., 5, 3, 7).</p>
-            <p id="totalItemsDisplay" class="text-gray-700 font-semibold mb-4"></p>
+            <div class="flex justify-between items-center mb-4">
+                <p id="totalItemsDisplay" class="text-gray-700 font-semibold"></p>
+                <p id="participantCountDisplay" class="text-gray-700 font-semibold"></p>
+            </div>
             <div class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 space-x-reverse:rtl md:space-x-reverse:ltr">
                 <input type="text" id="domainInput" class="flex-1 w-full md:w-auto px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g., 5, 3, 7">
             </div>
@@ -182,6 +185,13 @@
                         <p id="domainMessageText" class="text-sm"></p>
                     </div>
                 </div>
+            </div>
+            <!-- New section for Positives Threshold -->
+            <div class="flex flex-col items-center space-y-2 mt-6">
+                <label for="positiveThreshold" class="block text-gray-700 font-semibold" id="positiveThresholdLabel">
+                    Positives Threshold (%):
+                </label>
+                <input type="number" id="positiveThreshold" class="w-24 px-4 py-2 border rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-indigo-500" value="85" min="0" max="100">
             </div>
         </div>
         <!-- Action buttons container -->
@@ -291,7 +301,8 @@
         const analyzeButton = document.getElementById('analyzeButton');
         const actionButtons = document.getElementById('actionButtons');
         const totalItemsDisplay = document.getElementById('totalItemsDisplay');
-        const positiveNegativeItemsContainer = document.getElementById('positiveNegativeItemsContainer'); // New container
+        const participantCountDisplay = document.getElementById('participantCountDisplay'); // New element
+        const positiveNegativeItemsContainer = document.getElementById('positiveNegativeItemsContainer');
 
         // Data orientation elements
         const dataOrientationToggle = document.getElementById('dataOrientationToggle');
@@ -312,9 +323,14 @@
         const domainMessageTitle = document.getElementById('domainMessageTitle');
 
         // Item trimming elements
-        const trimItemsToggle = document.getElementById('trimItemsToggle'); // New element
-        const trimItemsLabel = document.getElementById('trimItemsLabel');   // New element
-        let enableItemTrimming = false; // New variable
+        const trimItemsToggle = document.getElementById('trimItemsToggle');
+        const trimItemsLabel = document.getElementById('trimItemsLabel');
+        let enableItemTrimming = false;
+
+        // Positives Threshold elements
+        const positiveThresholdInput = document.getElementById('positiveThreshold'); // New element
+        const positiveThresholdLabel = document.getElementById('positiveThresholdLabel'); // New element
+        let positiveThresholdPercentage = parseFloat(positiveThresholdInput.value); // Initialize with default
 
         // Template buttons and guide elements
         const showVerticalTemplateBtn = document.getElementById('showVerticalTemplateBtn');
@@ -344,20 +360,21 @@
                 domainTitle: 'Define Domains (Optional)',
                 domainSubtitle: 'Enter the number of items for each domain, separated by commas (e.g., 5, 3, 7).',
                 totalItemsDisplay: 'Total items identified: {total}',
+                participantCount: 'Number of participants: {count}', // New translation
                 domainNumber: 'Domain {number}',
                 domainAverages: 'Domain Averages',
                 domainItemsError: 'The total number of items specified ({sum}) does not match the total number of items in the file ({total}).',
                 tableHeaders: {
                     no: 'No.',
                     item: 'Item',
-                    positives: 'Positives', // New header
-                    totalColumn: 'Total', // For the 100% column
-                    totalRowLabel: 'Totals', // For the footer row
-                    totalPercentageLabel: 'Overall Percentage Sum' // For the 100% check text
+                    positives: 'Positives',
+                    totalColumn: 'Total',
+                    totalRowLabel: 'Totals',
+                    totalPercentageLabel: 'Overall Percentage Sum'
                 },
                 chartTitle: 'Percentage Distribution of Responses',
                 domainChartTitle: 'Percentage Distribution for Domain {number}',
-                domainAveragesChartTitle: 'Average Percentage Distribution Across All Domains', // Changed chart title
+                domainAveragesChartTitle: 'Average Percentage Distribution Across All Domains',
                 dataOrientationLabel: 'Data Orientation:',
                 orientationVertical: 'Vertical',
                 orientationHorizontal: 'Horizontal',
@@ -365,8 +382,9 @@
                 scaleOrderSubtitle: 'Arrange the automatically recognized response categories in the desired order (highest value at the top).',
                 scaleOrderEmpty: 'Please add at least one response category.',
                 scaleOrderDuplicate: 'Duplicate response category found. Please ensure all categories are unique.',
-                trimItemsLabel: 'Trim Questionnaire Items (keep text in [ ])', // New translation
-                positiveLabel: 'Positive', // New translation
+                trimItemsLabel: 'Trim Questionnaire Items (keep text in [ ])',
+                positiveLabel: 'Positive',
+                positiveThresholdLabel: 'Positives Threshold (%):', // New translation
                 templateButtons: {
                     vertical: 'Vertical Template',
                     horizontal: 'Horizontal Template'
@@ -381,8 +399,8 @@
                     htHeaderItem: 'Item',
                     htRowResp: 'Respondent'
                 },
-                positiveItemsTitle: 'Positive Items', // Renamed title
-                negativeItemsTitle: 'Negative Items' // Renamed title
+                positiveItemsTitle: 'Positive Items',
+                negativeItemsTitle: 'Negative Items'
             },
             ar: {
                 title: 'تحليل نتائج الاستبيان',
@@ -401,20 +419,21 @@
                 domainTitle: 'تحديد المجالات (اختياري)',
                 domainSubtitle: 'أدخل عدد البنود لكل مجال، مفصولة بفواصل (مثال: 5, 3, 7).',
                 totalItemsDisplay: 'إجمالي البنود المحددة: {total}',
+                participantCount: 'عدد المشاركين: {count}', // New translation
                 domainNumber: 'المجال {number}',
                 domainAverages: 'متوسطات المجال',
                 domainItemsError: 'مجموع البنود المحددة ({sum}) لا يتطابق مع العدد الإجمالي للبنود في الملف ({total}).',
                 tableHeaders: {
                     no: 'الرقم',
                     item: 'العناصر',
-                    positives: 'الإيجابيات', // New header
-                    totalColumn: 'الإجمالي', // For the 100% column
-                    totalRowLabel: 'المجاميع', // For the footer row
-                    totalPercentageLabel: 'المجموع الكلي للنسب المئوية' // For the 100% check text
+                    positives: 'الإيجابيات',
+                    totalColumn: 'الإجمالي',
+                    totalRowLabel: 'المجاميع',
+                    totalPercentageLabel: 'المجموع الكلي للنسب المئوية'
                 },
                 chartTitle: 'توزيع الاستجابات بالنسبة المئوية',
                 domainChartTitle: 'توزيع الاستجابات بالنسبة المئوية للمجال {number}',
-                domainAveragesChartTitle: 'متوسط توزيع النسبة المئوية عبر جميع المجالات', // Changed chart title
+                domainAveragesChartTitle: 'متوسط توزيع النسبة المئوية عبر جميع المجالات',
                 dataOrientationLabel: 'اتجاه البيانات:',
                 orientationVertical: 'عمودي',
                 orientationHorizontal: 'أفقي',
@@ -422,8 +441,9 @@
                 scaleOrderSubtitle: 'أضف فئات الاستجابة وقم بترتيبها بالترتيب المطلوب (أعلى قيمة في الأعلى).',
                 scaleOrderEmpty: 'الرجاء إضافة فئة استجابة واحدة على الأقل.',
                 scaleOrderDuplicate: 'تم العثور على فئة استجابة مكررة. يرجى التأكد من أن جميع الفئات فريدة.',
-                trimItemsLabel: 'قص بنود الاستبيان (الاحتفاظ بالنص داخل [ ])', // New translation
-                positiveLabel: 'إيجابي', // New translation
+                trimItemsLabel: 'قص بنود الاستبيان (الاحتفاظ بالنص داخل [ ])',
+                positiveLabel: 'إيجابي',
+                positiveThresholdLabel: 'عتبة الإيجابيات (%):', // New translation
                 templateButtons: {
                     vertical: 'قالب عمودي',
                     horizontal: 'قالب أفقي'
@@ -438,8 +458,8 @@
                     htHeaderItem: 'البند',
                     htRowResp: 'المستجيب'
                 },
-                positiveItemsTitle: 'البنود الإيجابية', // Renamed title
-                negativeItemsTitle: 'البنود السلبية' // Renamed title
+                positiveItemsTitle: 'البنود الإيجابية',
+                negativeItemsTitle: 'البنود السلبية'
             }
         };
 
@@ -513,6 +533,7 @@
             scaleOrderSection.classList.add('hidden'); // Hide scale order until parsed
             domainMessageBox.classList.add('hidden'); // Hide domain message box
             positiveNegativeItemsContainer.classList.add('hidden'); // Hide positive/negative items container
+            participantCountDisplay.textContent = ''; // Clear participant count on new file upload
 
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -532,11 +553,16 @@
 
                     const identifiedResponses = new Set();
                     let dataToScanForResponses = [];
+                    let actualParticipantsCount = 0; // Initialize actual participant count
 
                     if (dataOrientation === 'vertical') {
                         dataToScanForResponses = parsedData.slice(1).flatMap(row => row.slice(1));
+                        // For vertical, participants are rows (excluding header)
+                        actualParticipantsCount = parsedData[0].length > 1 ? parsedData[0].slice(1).length : 0; // Number of response columns
                     } else {
                         dataToScanForResponses = parsedData.slice(1).flatMap(row => row.slice(1));
+                        // For horizontal, participants are columns (excluding first item column)
+                        actualParticipantsCount = parsedData.slice(1).length; // Number of data rows (each row is a participant)
                     }
 
                     dataToScanForResponses.forEach(response => {
@@ -573,9 +599,11 @@
                     domainSection.classList.remove('hidden'); // Show domain section
                     actionButtons.classList.remove('hidden'); // Show action buttons
 
-                    // Display total items identified
+                    // Display total items identified and participant count
                     const totalItemsInFile = dataOrientation === 'vertical' ? parsedData.slice(1).length : parsedData[0].slice(1).length;
                     if (totalItemsDisplay) totalItemsDisplay.textContent = languageData[currentLang].totalItemsDisplay.replace('{total}', totalItemsInFile);
+                    if (participantCountDisplay) participantCountDisplay.textContent = languageData[currentLang].participantCount.replace('{count}', actualParticipantsCount);
+
 
                     scaleOrderSection.classList.remove('hidden'); // Show ranking widget after file upload
                 } catch (error) {
@@ -710,8 +738,9 @@
                 });
             }
 
+            const totalRespondents = dataOrientation === 'vertical' ? (data[0].length > 1 ? data[0].slice(1).length : 0) : data.slice(1).length;
 
-            const totalRespondents = responses[0] ? responses[0].length : 0;
+
             const tableData = [];
 
             // Calculate overall frequencies and percentages for the full questionnaire
@@ -763,8 +792,8 @@
                 tableData.push(rowData);
             });
 
-            // Sort table data by mean in descending order
-            tableData.sort((a, b) => b.mean - a.mean);
+            // Do NOT sort table data by mean in descending order as per user request
+            // tableData.sort((a, b) => b.mean - a.mean);
 
             // Render the main table
             renderTable(tableData, 'full', resultsContainer);
@@ -775,8 +804,9 @@
                 positivesPercentage: item.totalResponses > 0 ? ((item.positives / item.totalResponses) * 100) : 0
             }));
 
-            const highPositives = itemsWithPositives.filter(item => item.positivesPercentage >= 85);
-            const lowPositives = itemsWithPositives.filter(item => item.positivesPercentage < 85);
+            // Use the dynamic positiveThresholdPercentage
+            const highPositives = itemsWithPositives.filter(item => item.positivesPercentage >= positiveThresholdPercentage);
+            const lowPositives = itemsWithPositives.filter(item => item.positivesPercentage < positiveThresholdPercentage);
 
             renderPositiveItemsLists(highPositives, lowPositives);
 
@@ -869,8 +899,8 @@
                     });
                 });
 
-                // Sort table data by mean in descending order
-                tableData.sort((a, b) => b.mean - a.mean);
+                // Do NOT sort table data by mean in descending order as per user request
+                // tableData.sort((a, b) => b.mean - a.mean);
 
                 // Render table for the current domain
                 renderTable(tableData, `domain-${domainNum + 1}`, resultsContainer, languageData[currentLang].domainNumber.replace('{number}', domainNum + 1));
@@ -940,8 +970,9 @@
             });
 
             // Filter items for positive lists (after all domains are processed)
-            const highPositives = allItemsWithPositives.filter(item => item.positivesPercentage >= 85);
-            const lowPositives = allItemsWithPositives.filter(item => item.positivesPercentage < 85);
+            // Use the dynamic positiveThresholdPercentage
+            const highPositives = allItemsWithPositives.filter(item => item.positivesPercentage >= positiveThresholdPercentage);
+            const lowPositives = allItemsWithPositives.filter(item => item.positivesPercentage < positiveThresholdPercentage);
             renderPositiveItemsLists(highPositives, lowPositives);
 
 
@@ -1112,7 +1143,7 @@
             });
 
             const tdGrandTotal = document.createElement('td'); // Total of percentages (100%)
-            tdGrandTotal.className = 'px-4 py-2 text-center border-t border-gray-300 whitespace-nowrap';
+            tdGrandTotal.className = 'px-4 py-2 border-t border-gray-300 whitespace-nowrap';
             tdGrandTotal.textContent = `${overallPercentageSumCheck.toFixed(2)}%`; // Should be close to 100%
             totalRow.appendChild(tdGrandTotal);
 
@@ -1481,6 +1512,7 @@
             document.getElementById('scaleOrderTitle').textContent = languageData[currentLang].scaleOrderTitle;
             document.getElementById('scaleOrderSubtitle').textContent = languageData[currentLang].scaleOrderSubtitle;
             trimItemsLabel.textContent = languageData[currentLang].trimItemsLabel;
+            positiveThresholdLabel.textContent = languageData[currentLang].positiveThresholdLabel; // Update label
 
             // Update template guide texts
             templateGuideTitle.textContent = languageData[currentLang].templateGuide.title;
@@ -1524,7 +1556,9 @@
                 const domainSizesInput = domainInput.value.trim();
                 const domainSizes = domainSizesInput.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n > 0);
                 const totalItemsInFile = dataOrientation === 'vertical' ? storedParsedData.slice(1).length : storedParsedData[0].slice(1).length;
+                const totalRespondents = dataOrientation === 'vertical' ? (storedParsedData[0].length > 1 ? storedParsedData[0].slice(1).length : 0) : storedParsedData.slice(1).length;
                 if (totalItemsDisplay) totalItemsDisplay.textContent = languageData[currentLang].totalItemsDisplay.replace('{total}', totalItemsInFile);
+                if (participantCountDisplay) participantCountDisplay.textContent = languageData[currentLang].participantCount.replace('{count}', totalRespondents);
 
                 if (resultsContainer.childElementCount > 0) { // Check if results were already displayed
                     if (domainSizes.length > 0) {
@@ -1569,6 +1603,7 @@
             positiveNegativeItemsContainer.classList.add('hidden'); // Hide positive/negative items container
             xlsxFile.value = ''; // Clear the selected file
             totalItemsDisplay.textContent = ''; // Clear total items display
+            participantCountDisplay.textContent = ''; // Clear participant count
         });
 
 
@@ -1884,6 +1919,31 @@
             }
         });
 
+        // Event listener for Positives Threshold input
+        positiveThresholdInput.addEventListener('input', () => {
+            let value = parseFloat(positiveThresholdInput.value);
+            if (isNaN(value) || value < 0) {
+                value = 0;
+            } else if (value > 100) {
+                value = 100;
+            }
+            positiveThresholdPercentage = value;
+            positiveThresholdInput.value = value; // Update the input field to reflect the corrected value
+
+            // Re-analyze data if already displayed to apply new threshold
+            const storedParsedData = JSON.parse(sessionStorage.getItem('parsedData'));
+            if (storedParsedData && resultsContainer.childElementCount > 0) {
+                const domainSizesInput = domainInput.value.trim();
+                const domainSizes = domainSizesInput.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n > 0);
+                if (domainSizes.length > 0) {
+                    displayDomainResults(storedParsedData, domainSizes);
+                } else {
+                    displayFullResults(storedParsedData);
+                }
+            }
+        });
+
+
         // Template Guide Button Listeners
         showVerticalTemplateBtn.addEventListener('click', () => {
             templateGuideContainer.classList.remove('hidden');
@@ -1914,5 +1974,3 @@
     </script>
 </body>
 </html>
-
-
