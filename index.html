@@ -1385,6 +1385,8 @@
         function renderChart(labelsArray, datasetsArray, canvasId, title, isStacked = false, containerId = 'chartContainer') {
             const chartSection = document.createElement('div');
             chartSection.className = 'p-6 bg-gray-50 rounded-xl shadow-inner flex flex-col justify-center items-center';
+            // Add a thin line border to the chart section
+            chartSection.style.border = '1px solid #d1d5db'; // Tailwind gray-300
 
             const chartTitleElem = document.createElement('h3');
             chartTitleElem.className = 'text-lg font-bold mb-4 text-black'; // Changed to text-black
@@ -2001,4 +2003,3 @@
     </script>
 </body>
 </html>
-
