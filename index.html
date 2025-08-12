@@ -102,7 +102,8 @@
     </div>
     <div class="max-w-7xl mx-auto bg-white p-8 rounded-2xl shadow-xl">
         <h1 id="mainTitle" class="text-3xl font-bold text-center mb-1 text-gray-800">Questionnaire Results Analysis</h1>
-        <p class="text-center text-gray-600 mb-6 text-sm" id="developerCredit">Developed by Dr. Mazen Badawy – Doctorate of English Teaching & Testing</p>
+        <p class="text-center text-gray-600 mb-6 text-xl font-bold" id="developerCredit">Developed by Dr. Mazen Badawy – Doctorate of English Teaching & Testing</p>
+        
         <p id="subtitle" class="text-center text-gray-600 mb-8">Upload your Excel (XLSX) file with the questionnaire results to view the analysis.</p>
         <!-- Data Orientation switch button -->
         <div class="flex flex-col items-center space-y-4 mb-8">
@@ -176,6 +177,10 @@
                 Copy All Tables
             </button>
         </div>
+
+        <!-- New elements for file name and participant count -->
+        <p id="fileNameDisplay" class="text-center text-gray-800 mb-2 font-bold hidden"></p>
+        <p id="participantCountDisplay" class="text-center text-gray-700 mb-8 hidden"></p>
 
         <!-- The results table container -->
         <div id="resultsContainer" class="hidden overflow-x-auto">
@@ -271,6 +276,8 @@
         const analyzeButton = document.getElementById('analyzeButton');
         const actionButtons = document.getElementById('actionButtons');
         const positiveNegativeItemsContainer = document.getElementById('positiveNegativeItemsContainer');
+        const fileNameDisplay = document.getElementById('fileNameDisplay'); // New element
+        const participantCountDisplay = document.getElementById('participantCountDisplay'); // New element
 
         // Data orientation elements
         const dataOrientationToggle = document.getElementById('dataOrientationToggle');
@@ -472,6 +479,10 @@
             scaleOrderSection.classList.add('hidden');
             positiveNegativeItemsContainer.classList.add('hidden');
 
+            fileNameDisplay.textContent = file.name;
+            fileNameDisplay.classList.remove('hidden');
+            participantCountDisplay.classList.add('hidden'); // Hide until analyzed
+
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
@@ -553,6 +564,19 @@
                 showScaleOrderMessage(languageData[currentLang].scaleOrderEmpty, 'error');
                 return;
             }
+
+            // Calculate number of participants based on orientation
+            let numParticipants;
+            if (dataOrientation === 'vertical') {
+                // If vertical, first row after header contains responses, and each subsequent column is a participant
+                // So, number of participants is the length of the second row (index 1) minus 1 (for the item name column)
+                numParticipants = storedParsedData.length > 1 && storedParsedData[1].length > 1 ? storedParsedData[1].length - 1 : 0;
+            } else {
+                // If horizontal, each row after the header row is a participant
+                numParticipants = storedParsedData.length > 1 ? storedParsedData.length - 1 : 0;
+            }
+            participantCountDisplay.textContent = `${numParticipants} Participants`;
+            participantCountDisplay.classList.remove('hidden');
 
             // Call the new domain-detection analysis function
             displayDomainResults(storedParsedData);
@@ -691,7 +715,7 @@
                         positives: positivesSum
                     };
                     tableData.push(rowData);
-                    allItemsWithPositives.push({ item: item, positivesPercentage: itemResponses.length > 0 ? ((positivesSum / itemResponses.length) * 100) : 0 });
+                    allItemsWithPositives.push({ item: item, positivesPercentage: itemResponses.length > 0 ? ((positivesSum / itemResponses.length) * 100).toFixed(2) : 0 });
                 });
 
                 // Sort table data by mean in descending order
@@ -840,21 +864,30 @@
                                 <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${languageData[currentLang].tableHeaders.item}</th>
                                 ${currentScaleOptions.map(option => `<th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${option}</th>`).join('')}
                                 <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${languageData[currentLang].tableHeaders.positives}</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${languageData[currentLang].tableHeaders.totalColumn}</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200 text-sm text-gray-700">
-                            ${tableData.map((row, index) => `
+                            ${tableData.map((row, index) => {
+                                let rowPercentagesSum = 0;
+                                const cells = currentScaleOptions.map(option => {
+                                    const count = row.frequencies[option] || 0;
+                                    const percentage = row.totalResponses > 0 ? ((count / row.totalResponses) * 100) : 0;
+                                    rowPercentagesSum += percentage;
+                                    return `<td class="px-6 py-4 whitespace-nowrap text-left">${percentage.toFixed(2)}%</td>`;
+                                }).join('');
+                                const positivesPercentage = row.totalResponses > 0 ? ((row.positives / row.totalResponses) * 100) : 0;
+
+                                return `
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap text-left font-medium">${index + 1}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-left font-medium">${row.item}</td>
-                                    ${currentScaleOptions.map(option => {
-                                        const count = row.frequencies[option] || 0;
-                                        const percentage = row.totalResponses > 0 ? ((count / row.totalResponses) * 100).toFixed(2) : 0;
-                                        return `<td class="px-6 py-4 whitespace-nowrap text-left">${percentage}%</td>`;
-                                    }).join('')}
-                                    <td class="px-6 py-4 whitespace-nowrap text-left font-semibold text-blue-600">${row.totalResponses > 0 ? ((row.positives / row.totalResponses) * 100).toFixed(2) : 0}%</td>
+                                    ${cells}
+                                    <td class="px-6 py-4 whitespace-nowrap text-left font-semibold text-blue-600">${positivesPercentage.toFixed(2)}%</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-left font-semibold">${rowPercentagesSum.toFixed(2)}%</td>
                                 </tr>
-                            `).join('')}
+                                `;
+                            }).join('')}
                         </tbody>
                         <tfoot class="bg-gray-100 font-bold">
                             <tr>
@@ -862,14 +895,24 @@
                                 ${currentScaleOptions.map(option => {
                                     const totalCountForOption = tableData.reduce((sum, row) => sum + (row.frequencies[option] || 0), 0);
                                     const overallTotalResponses = tableData.reduce((sum, row) => sum + row.totalResponses, 0);
-                                    const totalPercentage = overallTotalResponses > 0 ? ((totalCountForOption / overallTotalResponses) * 100).toFixed(2) : 0;
-                                    return `<td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${totalPercentage}%</td>`;
+                                    const totalPercentage = overallTotalResponses > 0 ? ((totalCountForOption / overallTotalResponses) * 100) : 0;
+                                    return `<td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${totalPercentage.toFixed(2)}%</td>`;
                                 }).join('')}
                                 ${(() => {
                                     const totalPositivesCount = tableData.reduce((sum, row) => sum + row.positives, 0);
                                     const overallTotalResponses = tableData.reduce((sum, row) => sum + row.totalResponses, 0);
-                                    const overallPositivesPercentage = overallTotalResponses > 0 ? ((totalPositivesCount / overallTotalResponses) * 100).toFixed(2) : 0;
-                                    return `<td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${overallPositivesPercentage}%</td>`;
+                                    const overallPositivesPercentage = overallTotalResponses > 0 ? ((totalPositivesCount / overallTotalResponses) * 100) : 0;
+                                    return `<td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${overallPositivesPercentage.toFixed(2)}%</td>`;
+                                })()}
+                                ${(() => {
+                                    // Calculate total sum of percentages for the footer row based on currentScaleOptions
+                                    let footerTotalSum = 0;
+                                    currentScaleOptions.forEach(option => {
+                                        const totalCountForOption = tableData.reduce((sum, row) => sum + (row.frequencies[option] || 0), 0);
+                                        const overallTotalResponses = tableData.reduce((sum, row) => sum + row.totalResponses, 0);
+                                        footerTotalSum += overallTotalResponses > 0 ? ((totalCountForOption / overallTotalResponses) * 100) : 0;
+                                    });
+                                    return `<td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${footerTotalSum.toFixed(2)}%</td>`;
                                 })()}
                             </tr>
                         </tfoot>
@@ -893,24 +936,30 @@
                                 <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">Domain Name</th>
                                 ${currentScaleOptions.map(option => `<th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${option}</th>`).join('')}
                                 <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">Positives</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${languageData[currentLang].tableHeaders.totalColumn}</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200 text-sm text-gray-700">
                             ${domainAverages.map((domain, index) => {
                                 const totalPositiveResponses = Array.from(positiveScaleOptions).reduce((sum, option) => sum + (domain.frequencies[option] || 0), 0);
                                 const totalResponses = domain.totalResponses;
-                                const positivesPercentage = totalResponses > 0 ? ((totalPositiveResponses / totalResponses) * 100).toFixed(2) : 0;
+                                const positivesPercentage = totalResponses > 0 ? ((totalPositiveResponses / totalResponses) * 100) : 0;
+                                
+                                let rowPercentagesSum = 0;
+                                const cells = currentScaleOptions.map(option => {
+                                    const count = domain.frequencies[option] || 0;
+                                    const percentage = totalResponses > 0 ? ((count / totalResponses) * 100) : 0;
+                                    rowPercentagesSum += percentage;
+                                    return `<td class="px-6 py-4 whitespace-nowrap text-left">${percentage.toFixed(2)}%</td>`;
+                                }).join('');
 
                                 return `
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap text-left font-medium">${index + 1}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-left font-medium">${domain.domainName}</td>
-                                    ${currentScaleOptions.map(option => {
-                                        const count = domain.frequencies[option] || 0;
-                                        const percentage = domain.totalResponses > 0 ? ((count / domain.totalResponses) * 100).toFixed(2) : 0;
-                                        return `<td class="px-6 py-4 whitespace-nowrap text-left">${percentage}%</td>`;
-                                    }).join('')}
-                                    <td class="px-6 py-4 whitespace-nowrap text-left">${positivesPercentage}%</td>
+                                    ${cells}
+                                    <td class="px-6 py-4 whitespace-nowrap text-left">${positivesPercentage.toFixed(2)}%</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-left font-semibold">${rowPercentagesSum.toFixed(2)}%</td>
                                 </tr>
                                 `;
                             }).join('')}
@@ -933,6 +982,18 @@
                                         return sum + (totalResponses > 0 ? (totalPositiveResponses / totalResponses) * 100 : 0);
                                     }, 0) / (domainAverages.length || 1); // Protect against division by zero if domainAverages is empty
                                     return `<td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${overallAvgPositivesPercentage.toFixed(2)}%</td>`;
+                                })()}
+                                ${(() => {
+                                    let footerTotalSum = 0;
+                                    domainAverages.forEach(domain => {
+                                        currentScaleOptions.forEach(option => {
+                                            const count = domain.frequencies[option] || 0;
+                                            const percentage = domain.totalResponses > 0 ? ((count / domain.totalResponses) * 100) : 0;
+                                            footerTotalSum += percentage;
+                                        });
+                                    });
+                                    // Average the total sum across domains for the footer total
+                                    return `<td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${(footerTotalSum / (domainAverages.length || 1)).toFixed(2)}%</td>`;
                                 })()}
                             </tr>
                         </tfoot>
@@ -1018,6 +1079,11 @@
                             display: false, // Hide y-axis
                         },
                         x: {
+                            ticks: {
+                                font: {
+                                    weight: 'bold' // Make x-axis labels bold
+                                }
+                            },
                             title: {
                                 display: false // Hide x-axis title for these charts
                             }
@@ -1117,6 +1183,11 @@
                             display: false, // Hide y-axis
                         },
                         x: {
+                            ticks: {
+                                font: {
+                                    weight: 'bold' // Make x-axis labels bold
+                                }
+                            },
                             title: {
                                 display: false // Hide x-axis title
                             }
@@ -1341,6 +1412,16 @@
             const workbook = XLSX.utils.book_new();
             const sheetData = [];
 
+            // Add filename and participant count at the top of the export
+            if (!fileNameDisplay.classList.contains('hidden')) {
+                sheetData.push([fileNameDisplay.textContent]);
+                sheetData.push([]); // Spacer
+            }
+            if (!participantCountDisplay.classList.contains('hidden')) {
+                sheetData.push([participantCountDisplay.textContent]);
+                sheetData.push([]); // Spacer
+            }
+
             allTables.forEach(table => {
                 const titleElement = table.closest('.table-container').querySelector('h2');
                 const tableTitle = titleElement ? titleElement.textContent.trim() : 'Table';
@@ -1412,6 +1493,15 @@
             const allTables = document.querySelectorAll('#resultsContainer .table-container table');
             let combinedText = '';
 
+            // Add filename and participant count at the top of the copied text
+            if (!fileNameDisplay.classList.contains('hidden')) {
+                combinedText += fileNameDisplay.textContent + '\n\n';
+            }
+            if (!participantCountDisplay.classList.contains('hidden')) {
+                combinedText += participantCountDisplay.textContent + '\n\n';
+            }
+
+
             allTables.forEach(table => {
                 const titleElement = table.closest('.table-container').querySelector('h2');
                 const tableTitle = titleElement ? titleElement.textContent.trim() : 'Table';
@@ -1475,8 +1565,8 @@
                     showMessage('Failed to copy tables. Please try again or use the Export button.', 'error');
                 }
             } catch (err) {
-                console.error('Failed to copy tables (execCommand):', err);
-                showMessage('Failed to copy tables. Please try again or use the Export button.', 'error');
+                    console.error('Failed to copy tables (execCommand):', err);
+                    showMessage('Failed to copy tables. Please try again or use the Export button.', 'error');
             } finally {
                 document.body.removeChild(textArea);
             }
@@ -1490,7 +1580,7 @@
             // Update table headers in guide
             document.getElementById('vtHeaderItem').textContent = languageData[currentLang].templateGuide.vtHeaderItem;
             document.getElementById('vtHeaderResp1').textContent = languageData[currentLang].templateGuide.vtHeaderResp;
-            document.getElementById('vtHeaderResp2').textContent = languageData[currentJLg].templateGuide.vtHeaderResp;
+            document.getElementById('vtHeaderResp2').textContent = languageData[currentLang].templateGuide.vtHeaderResp; 
         });
 
         showHorizontalTemplateBtn.addEventListener('click', () => {
