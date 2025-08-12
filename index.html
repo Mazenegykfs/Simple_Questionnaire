@@ -98,7 +98,7 @@
 
     <!-- Logo at the top right -->
     <div style="position: absolute; top: 1.5rem; right: 1.5rem; z-index: 100;">
-        <img src="00.png" alt="Logo" class="h-20 w-20 shadow-md rounded-full">
+        <img src="https://placehold.co/80x80/ffffff/000000?text=Logo" alt="Logo" class="h-20 w-20 shadow-md rounded-full">
     </div>
     <div class="max-w-7xl mx-auto bg-white p-8 rounded-2xl shadow-xl">
         <h1 id="mainTitle" class="text-3xl font-bold text-center mb-1 text-gray-800">Questionnaire Results Analysis</h1>
@@ -186,10 +186,6 @@
         <div id="resultsContainer" class="hidden overflow-x-auto">
             <!-- Tables for each domain will be injected here -->
         </div>
-        <!-- Sections for Positive and Negative Items -->
-        <div id="positiveNegativeItemsContainer" class="hidden">
-            <!-- These divs will be dynamically injected by renderPositiveItemsLists -->
-        </div>
         <!-- Charts container -->
         <div id="chartContainer" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
             <!-- Charts will be injected here -->
@@ -199,6 +195,10 @@
                     <canvas id="fullResultsChart"></canvas>
                 </div>
             </div>
+        </div>
+        <!-- Sections for Positive and Negative Items -->
+        <div id="positiveNegativeItemsContainer" class="hidden">
+            <!-- These divs will be dynamically injected by renderPositiveItemsLists -->
         </div>
     </div>
     <!-- Template Guide Container (initially hidden) -->
@@ -761,6 +761,11 @@
             renderPositiveItemsLists(highPositives, lowPositives);
 
             renderOverallDomainAveragesChart(domainAverages);
+
+            // Reorder containers after all rendering is done
+            const parentContainer = resultsContainer.parentNode; // This is the max-w-7xl div
+            parentContainer.insertBefore(chartContainer, positiveNegativeItemsContainer);
+
         }
 
         // Function to process and display results (full questionnaire - legacy function, kept for now)
@@ -847,6 +852,10 @@
             }];
             renderChart(overallChartLabels, fullResultsDatasets, 'fullResultsChart', languageData[currentLang].chartTitle);
             actionButtons.classList.remove('hidden');
+
+            // Reorder containers after all rendering is done
+            const parentContainer = resultsContainer.parentNode; // This is the max-w-7xl div
+            parentContainer.insertBefore(chartContainer, positiveNegativeItemsContainer);
         }
         
         // Function to create a table dynamically
@@ -1604,4 +1613,3 @@
     </script>
 </body>
 </html>
-
