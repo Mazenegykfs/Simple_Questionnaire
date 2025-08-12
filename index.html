@@ -863,8 +863,8 @@
                                 <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${languageData[currentLang].tableHeaders.no}</th>
                                 <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${languageData[currentLang].tableHeaders.item}</th>
                                 ${currentScaleOptions.map(option => `<th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${option}</th>`).join('')}
-                                <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${languageData[currentLang].tableHeaders.positives}</th>
                                 <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${languageData[currentLang].tableHeaders.totalColumn}</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${languageData[currentLang].tableHeaders.positives}</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200 text-sm text-gray-700">
@@ -883,8 +883,8 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-left font-medium">${index + 1}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-left font-medium">${row.item}</td>
                                     ${cells}
-                                    <td class="px-6 py-4 whitespace-nowrap text-left font-semibold text-blue-600">${positivesPercentage.toFixed(2)}%</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-left font-semibold">${rowPercentagesSum.toFixed(2)}%</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-left font-semibold text-blue-600">${positivesPercentage.toFixed(2)}%</td>
                                 </tr>
                                 `;
                             }).join('')}
@@ -899,12 +899,6 @@
                                     return `<td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${totalPercentage.toFixed(2)}%</td>`;
                                 }).join('')}
                                 ${(() => {
-                                    const totalPositivesCount = tableData.reduce((sum, row) => sum + row.positives, 0);
-                                    const overallTotalResponses = tableData.reduce((sum, row) => sum + row.totalResponses, 0);
-                                    const overallPositivesPercentage = overallTotalResponses > 0 ? ((totalPositivesCount / overallTotalResponses) * 100) : 0;
-                                    return `<td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${overallPositivesPercentage.toFixed(2)}%</td>`;
-                                })()}
-                                ${(() => {
                                     // Calculate total sum of percentages for the footer row based on currentScaleOptions
                                     let footerTotalSum = 0;
                                     currentScaleOptions.forEach(option => {
@@ -913,6 +907,12 @@
                                         footerTotalSum += overallTotalResponses > 0 ? ((totalCountForOption / overallTotalResponses) * 100) : 0;
                                     });
                                     return `<td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${footerTotalSum.toFixed(2)}%</td>`;
+                                })()}
+                                ${(() => {
+                                    const totalPositivesCount = tableData.reduce((sum, row) => sum + row.positives, 0);
+                                    const overallTotalResponses = tableData.reduce((sum, row) => sum + row.totalResponses, 0);
+                                    const overallPositivesPercentage = overallTotalResponses > 0 ? ((totalPositivesCount / overallTotalResponses) * 100) : 0;
+                                    return `<td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${overallPositivesPercentage.toFixed(2)}%</td>`;
                                 })()}
                             </tr>
                         </tfoot>
@@ -935,8 +935,8 @@
                                 <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">#</th>
                                 <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">Domain Name</th>
                                 ${currentScaleOptions.map(option => `<th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${option}</th>`).join('')}
-                                <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">Positives</th>
                                 <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${languageData[currentLang].tableHeaders.totalColumn}</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">Positives</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200 text-sm text-gray-700">
@@ -958,8 +958,8 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-left font-medium">${index + 1}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-left font-medium">${domain.domainName}</td>
                                     ${cells}
-                                    <td class="px-6 py-4 whitespace-nowrap text-left">${positivesPercentage.toFixed(2)}%</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-left font-semibold">${rowPercentagesSum.toFixed(2)}%</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-left">${positivesPercentage.toFixed(2)}%</td>
                                 </tr>
                                 `;
                             }).join('')}
@@ -976,14 +976,6 @@
                                     return `<td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${avgPercentageForOption.toFixed(2)}%</td>`;
                                 }).join('')}
                                 ${(() => {
-                                    const overallAvgPositivesPercentage = domainAverages.reduce((sum, domain) => {
-                                        const totalPositiveResponses = Array.from(positiveScaleOptions).reduce((pSum, pOption) => pSum + (domain.frequencies[pOption] || 0), 0);
-                                        const totalResponses = domain.totalResponses;
-                                        return sum + (totalResponses > 0 ? (totalPositiveResponses / totalResponses) * 100 : 0);
-                                    }, 0) / (domainAverages.length || 1); // Protect against division by zero if domainAverages is empty
-                                    return `<td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${overallAvgPositivesPercentage.toFixed(2)}%</td>`;
-                                })()}
-                                ${(() => {
                                     let footerTotalSum = 0;
                                     domainAverages.forEach(domain => {
                                         currentScaleOptions.forEach(option => {
@@ -994,6 +986,14 @@
                                     });
                                     // Average the total sum across domains for the footer total
                                     return `<td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${(footerTotalSum / (domainAverages.length || 1)).toFixed(2)}%</td>`;
+                                })()}
+                                ${(() => {
+                                    const overallAvgPositivesPercentage = domainAverages.reduce((sum, domain) => {
+                                        const totalPositiveResponses = Array.from(positiveScaleOptions).reduce((pSum, pOption) => pSum + (domain.frequencies[pOption] || 0), 0);
+                                        const totalResponses = domain.totalResponses;
+                                        return sum + (totalResponses > 0 ? (totalPositiveResponses / totalResponses) * 100 : 0);
+                                    }, 0) / (domainAverages.length || 1); // Protect against division by zero if domainAverages is empty
+                                    return `<td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${overallAvgPositivesPercentage.toFixed(2)}%</td>`;
                                 })()}
                             </tr>
                         </tfoot>
@@ -1462,20 +1462,20 @@
             });
 
             // Add the positive and negative items to the export
-            const positiveItemsList = document.querySelector('#positiveNegativeItemsContainer ul:first-of-type');
-            const negativeItemsList = document.querySelector('#positiveNegativeItemsContainer ul:last-of-type');
+            const highPositivesDiv = document.querySelector('#positiveNegativeItemsContainer .bg-green-50');
+            const lowPositivesDiv = document.querySelector('#positiveNegativeItemsContainer .bg-red-50');
 
-            if (positiveItemsList || negativeItemsList) {
-                if (positiveItemsList) {
-                    sheetData.push([languageData[currentLang].positiveItemsTitle]);
-                    Array.from(positiveItemsList.children).forEach(li => sheetData.push([li.textContent]));
-                    sheetData.push([]); // Spacer
-                }
-                if (negativeItemsList) {
-                    sheetData.push([languageData[currentLang].negativeItemsTitle]);
-                    Array.from(negativeItemsList.children).forEach(li => sheetData.push([li.textContent]));
-                    sheetData.push([]); // Spacer
-                }
+            if (highPositivesDiv) {
+                sheetData.push([highPositivesDiv.querySelector('h3').textContent]);
+                // Iterate over list items and add their text content
+                Array.from(highPositivesDiv.querySelectorAll('li')).forEach(li => sheetData.push([li.textContent]));
+                sheetData.push([]); // Spacer
+            }
+            if (lowPositivesDiv) {
+                sheetData.push([lowPositivesDiv.querySelector('h3').textContent]);
+                // Iterate over list items and add their text content
+                Array.from(lowPositivesDiv.querySelectorAll('li')).forEach(li => sheetData.push([li.textContent]));
+                sheetData.push([]); // Spacer
             }
 
             if (sheetData.length > 0) {
@@ -1505,7 +1505,7 @@
             allTables.forEach(table => {
                 const titleElement = table.closest('.table-container').querySelector('h2');
                 const tableTitle = titleElement ? titleElement.textContent.trim() : 'Table';
-                combinedText += tableTitle + '\n\n'; // Add title
+                combinedText += titleElement + '\n\n'; // Add title
 
                 // Get headers
                 Array.from(table.querySelectorAll('thead th')).forEach((th, index) => {
@@ -1535,17 +1535,17 @@
             });
 
             // Add positive and negative items
-            const positiveItemsList = document.querySelector('#positiveNegativeItemsContainer ul:first-of-type');
-            const negativeItemsList = document.querySelector('#positiveNegativeItemsContainer ul:last-of-type');
+            const highPositivesDiv = document.querySelector('#positiveNegativeItemsContainer .bg-green-50');
+            const lowPositivesDiv = document.querySelector('#positiveNegativeItemsContainer .bg-red-50');
 
-            if (positiveItemsList) {
-                combinedText += languageData[currentLang].positiveItemsTitle + '\n';
-                Array.from(positiveItemsList.children).forEach(li => combinedText += li.textContent + '\n');
+            if (highPositivesDiv) {
+                combinedText += highPositivesDiv.querySelector('h3').textContent + '\n';
+                Array.from(highPositivesDiv.querySelectorAll('li')).forEach(li => combinedText += li.textContent + '\n');
                 combinedText += '\n';
             }
-            if (negativeItemsList) {
-                combinedText += languageData[currentLang].negativeItemsTitle + '\n';
-                Array.from(negativeItemsList.children).forEach(li => combinedText += li.textContent + '\n');
+            if (lowPositivesDiv) {
+                combinedText += lowPositivesDiv.querySelector('h3').textContent + '\n';
+                Array.from(lowPositivesDiv.querySelectorAll('li')).forEach(li => combinedText += li.textContent + '\n');
                 combinedText += '\n';
             }
 
