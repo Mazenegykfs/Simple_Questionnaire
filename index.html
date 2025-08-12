@@ -8,6 +8,8 @@
     <!-- Include SheetJS and Chart.js libraries -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <!-- Include Chart.js Datalabels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
         body {
@@ -77,8 +79,8 @@
     </style>
 </head>
 <body class="p-6 md:p-12">
-    <!-- Language switch button container with fixed position -->
-    <div style="position: fixed; top: 1.5rem; left: 1.5rem; z-index: 100;" class="flex flex-col space-y-2">
+    <!-- Language switch button container -->
+    <div style="position: absolute; top: 1.5rem; left: 1.5rem; z-index: 100;" class="flex flex-col space-y-2">
         <div id="langToggle" class="flex rounded-lg shadow-md overflow-hidden cursor-pointer transition-colors duration-300">
             <span id="lang-en" class="px-6 py-3 font-semibold transition-colors duration-300">English</span>
             <span id="lang-ar" class="px-6 py-3 font-semibold transition-colors duration-300">العربية</span>
@@ -95,8 +97,8 @@
     </div>
 
     <!-- Logo at the top right -->
-    <div style="position: fixed; top: 1.5rem; right: 1.5rem; z-index: 100;">
-        <img src="00.png" alt="Logo" class="h-20 w-20 shadow-md rounded-full">
+    <div style="position: absolute; top: 1.5rem; right: 1.5rem; z-index: 100;">
+        <img src="https://placehold.co/80x80/ffffff/000000?text=Logo" alt="Logo" class="h-20 w-20 shadow-md rounded-full">
     </div>
     <div class="max-w-7xl mx-auto bg-white p-8 rounded-2xl shadow-xl">
         <h1 id="mainTitle" class="text-3xl font-bold text-center mb-1 text-gray-800">Questionnaire Results Analysis</h1>
@@ -110,15 +112,7 @@
                 <span id="orientation-horizontal" class="px-6 py-3 font-semibold transition-colors duration-300">Horizontal</span>
             </div>
         </div>
-        <!-- New section for item trimming option -->
-        <div class="flex flex-col items-center space-y-2 mb-8">
-            <label class="inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="trimItemsToggle" class="sr-only peer">
-                <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
-                <span id="trimItemsLabel" class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Trim Questionnaire Items (keep text in [ ])</span>
-            </label>
-        </div>
-
+        
         <!-- File input and loading indicator -->
         <div id="fileUploadSection" class="flex flex-col items-center space-y-4 mb-8">
             <label for="xlsxFile" class="block w-full text-center">
@@ -147,6 +141,12 @@
         <div id="scaleOrderSection" class="hidden w-full max-w-2xl mx-auto mb-8 p-6 bg-gray-50 rounded-lg shadow-inner">
             <h2 id="scaleOrderTitle" class="text-xl font-bold text-gray-700 mb-4">Define Scale Order (Ranking Widget)</h2>
             <p id="scaleOrderSubtitle" class="text-gray-600 mb-4">Arrange the automatically recognized response categories in the desired order (highest value at the top).</p>
+            <div class="flex flex-col items-center space-y-2 mb-4">
+                <label class="block w-full text-center text-sm font-medium text-gray-700" for="positivesThresholdInput">
+                    Positives Threshold:
+                </label>
+                <input type="number" id="positivesThresholdInput" value="85" min="0" max="100" class="w-24 px-2 py-1 text-center border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
             <div id="scaleOrderOptionsContainer" class="space-y-2">
                 <!-- Ranking options will be dynamically inserted here -->
             </div>
@@ -163,37 +163,7 @@
                 </div>
             </div>
         </div>
-        <!-- New section for domain analysis -->
-        <div id="domainSection" class="hidden w-full max-w-2xl mx-auto mb-8 p-6 bg-gray-50 rounded-lg shadow-inner">
-            <h2 id="domainTitle" class="text-xl font-bold text-gray-700 mb-4">Define Domains (Optional)</h2>
-            <p id="domainSubtitle" class="text-gray-600 mb-4">Enter the number of items for each domain, separated by commas (e.g., 5, 3, 7).</p>
-            <div class="flex justify-between items-center mb-4">
-                <p id="totalItemsDisplay" class="text-gray-700 font-semibold"></p>
-                <p id="participantCountDisplay" class="text-gray-700 font-semibold"></p>
-            </div>
-            <div class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 space-x-reverse:rtl md:space-x-reverse:ltr">
-                <input type="text" id="domainInput" class="flex-1 w-full md:w-auto px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g., 5, 3, 7">
-            </div>
-            <!-- Message Box for domain errors -->
-            <div id="domainMessageBox" class="hidden bg-red-100 border-r-4 border-red-500 text-red-700 p-4 w-full rounded-md mt-4" role="alert">
-                <div class="flex items-center">
-                    <svg class="h-6 w-6 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-8a1 112 0 1 11-2z" clip-rule="evenodd"></path>
-                    </svg>
-                    <div>
-                        <p class="font-bold" id="domainMessageTitle">Error!</p>
-                        <p id="domainMessageText" class="text-sm"></p>
-                    </div>
-                </div>
-            </div>
-            <!-- New section for Positives Threshold -->
-            <div class="flex flex-col items-center space-y-2 mt-6">
-                <label for="positiveThreshold" class="block text-gray-700 font-semibold" id="positiveThresholdLabel">
-                    Positives Threshold (%):
-                </label>
-                <input type="number" id="positiveThreshold" class="w-24 px-4 py-2 border rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-indigo-500" value="85" min="0" max="100">
-            </div>
-        </div>
+
         <!-- Action buttons container -->
         <div id="actionButtons" class="hidden flex flex-row justify-center space-x-4 space-x-reverse:rtl mb-8">
             <button id="analyzeButton" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-300">
@@ -203,7 +173,7 @@
                 Export to XLSX
             </button>
             <button id="copyTableButton" class="px-6 py-3 bg-teal-600 text-white font-semibold rounded-lg shadow-md hover:bg-teal-700 transition-colors duration-300">
-                Copy Table
+                Copy All Tables
             </button>
         </div>
 
@@ -283,25 +253,23 @@
     </div>
     <script>
     document.addEventListener('DOMContentLoaded', (event) => {
+        // Register the datalabels plugin globally
+        Chart.register(ChartDataLabels);
+
         // Get references to DOM elements
         const xlsxFile = document.getElementById('xlsxFile');
-        const fileUploadSection = document.getElementById('fileUploadSection');
         const loadingMessage = document.getElementById('loadingMessage');
         const resultsContainer = document.getElementById('resultsContainer');
         const chartContainer = document.getElementById('chartContainer');
         const messageBox = document.getElementById('messageBox');
         const messageText = document.getElementById('messageText');
         const exportButton = document.getElementById('exportButton');
-        const copyTableButton = document.getElementById('copyTableButton'); // Fixed ID here
+        const copyTableButton = document.getElementById('copyTableButton');
         const langToggle = document.getElementById('langToggle');
         const langEnSpan = document.getElementById('lang-en');
         const langArSpan = document.getElementById('lang-ar');
-        const domainSection = document.getElementById('domainSection');
-        const domainInput = document.getElementById('domainInput');
         const analyzeButton = document.getElementById('analyzeButton');
         const actionButtons = document.getElementById('actionButtons');
-        const totalItemsDisplay = document.getElementById('totalItemsDisplay');
-        const participantCountDisplay = document.getElementById('participantCountDisplay'); // New element
         const positiveNegativeItemsContainer = document.getElementById('positiveNegativeItemsContainer');
 
         // Data orientation elements
@@ -315,22 +283,8 @@
         const scaleOrderOptionsContainer = document.getElementById('scaleOrderOptionsContainer');
         const scaleOrderMessageBox = document.getElementById('scaleOrderMessageBox');
         const scaleOrderMessageText = document.getElementById('scaleOrderMessageText');
-        const scaleOrderMessageTitle = document = document.getElementById('scaleOrderMessageTitle');
-
-        // Domain message box elements (added missing references)
-        const domainMessageBox = document.getElementById('domainMessageBox');
-        const domainMessageText = document.getElementById('domainMessageText');
-        const domainMessageTitle = document.getElementById('domainMessageTitle');
-
-        // Item trimming elements
-        const trimItemsToggle = document.getElementById('trimItemsToggle');
-        const trimItemsLabel = document.getElementById('trimItemsLabel');
-        let enableItemTrimming = false;
-
-        // Positives Threshold elements
-        const positiveThresholdInput = document.getElementById('positiveThreshold'); // New element
-        const positiveThresholdLabel = document.getElementById('positiveThresholdLabel'); // New element
-        let positiveThresholdPercentage = parseFloat(positiveThresholdInput.value); // Initialize with default
+        const scaleOrderMessageTitle = document.getElementById('scaleOrderMessageTitle');
+        const positivesThresholdInput = document.getElementById('positivesThresholdInput');
 
         // Template buttons and guide elements
         const showVerticalTemplateBtn = document.getElementById('showVerticalTemplateBtn');
@@ -354,27 +308,22 @@
                 emptyFile: 'The file is empty or contains only one row.',
                 langButton: 'العربية',
                 exportButton: 'Export to XLSX',
-                copyTableButton: 'Copy Table',
-                tableCopied: 'Table copied to clipboard!',
+                copyTableButton: 'Copy All Tables',
+                tableCopied: 'All tables copied to clipboard!',
                 analyzeButton: 'Analyze Data',
-                domainTitle: 'Define Domains (Optional)',
-                domainSubtitle: 'Enter the number of items for each domain, separated by commas (e.g., 5, 3, 7).',
-                totalItemsDisplay: 'Total items identified: {total}',
-                participantCount: 'Number of participants: {count}', // New translation
-                domainNumber: 'Domain {number}',
+                domainLabel: 'Domain',
                 domainAverages: 'Domain Averages',
-                domainItemsError: 'The total number of items specified ({sum}) does not match the total number of items in the file ({total}).',
                 tableHeaders: {
                     no: 'No.',
                     item: 'Item',
-                    positives: 'Positives',
-                    totalColumn: 'Total',
-                    totalRowLabel: 'Totals',
-                    totalPercentageLabel: 'Overall Percentage Sum'
+                    positives: 'Positives', // New header
+                    totalColumn: 'Total', // For the 100% column
+                    totalRowLabel: 'Totals', // For the footer row
+                    totalPercentageLabel: 'Overall Percentage Sum' // For the 100% check text
                 },
                 chartTitle: 'Percentage Distribution of Responses',
-                domainChartTitle: 'Percentage Distribution for Domain {number}',
-                domainAveragesChartTitle: 'Average Percentage Distribution Across All Domains',
+                domainChartTitle: '{number}', // Changed chart title
+                domainAveragesChartTitle: 'Overall Averages', // Changed chart title
                 dataOrientationLabel: 'Data Orientation:',
                 orientationVertical: 'Vertical',
                 orientationHorizontal: 'Horizontal',
@@ -382,9 +331,7 @@
                 scaleOrderSubtitle: 'Arrange the automatically recognized response categories in the desired order (highest value at the top).',
                 scaleOrderEmpty: 'Please add at least one response category.',
                 scaleOrderDuplicate: 'Duplicate response category found. Please ensure all categories are unique.',
-                trimItemsLabel: 'Trim Questionnaire Items (keep text in [ ])',
-                positiveLabel: 'Positive',
-                positiveThresholdLabel: 'Positives Threshold (%):', // New translation
+                positiveLabel: 'Positive', // New translation
                 templateButtons: {
                     vertical: 'Vertical Template',
                     horizontal: 'Horizontal Template'
@@ -399,8 +346,8 @@
                     htHeaderItem: 'Item',
                     htRowResp: 'Respondent'
                 },
-                positiveItemsTitle: 'Positive Items',
-                negativeItemsTitle: 'Negative Items'
+                positiveItemsTitle: 'Positive Items', // Renamed title
+                negativeItemsTitle: 'Negative Items' // Renamed title
             },
             ar: {
                 title: 'تحليل نتائج الاستبيان',
@@ -413,27 +360,22 @@
                 emptyFile: 'الملف فارغ أو يحتوي على صف واحد فقط.',
                 langButton: 'English',
                 exportButton: 'تصدير إلى XLSX',
-                copyTableButton: 'نسخ الجدول',
-                tableCopied: 'تم نسخ الجدول إلى الحافظة!',
+                copyTableButton: 'نسخ جميع الجداول',
+                tableCopied: 'تم نسخ جميع الجداول إلى الحافظة!',
                 analyzeButton: 'تحليل البيانات',
-                domainTitle: 'تحديد المجالات (اختياري)',
-                domainSubtitle: 'أدخل عدد البنود لكل مجال، مفصولة بفواصل (مثال: 5, 3, 7).',
-                totalItemsDisplay: 'إجمالي البنود المحددة: {total}',
-                participantCount: 'عدد المشاركين: {count}', // New translation
-                domainNumber: 'المجال {number}',
+                domainLabel: 'المجال',
                 domainAverages: 'متوسطات المجال',
-                domainItemsError: 'مجموع البنود المحددة ({sum}) لا يتطابق مع العدد الإجمالي للبنود في الملف ({total}).',
                 tableHeaders: {
                     no: 'الرقم',
                     item: 'العناصر',
-                    positives: 'الإيجابيات',
-                    totalColumn: 'الإجمالي',
-                    totalRowLabel: 'المجاميع',
-                    totalPercentageLabel: 'المجموع الكلي للنسب المئوية'
+                    positives: 'الإيجابيات', // New header
+                    totalColumn: 'الإجمالي', // For the 100% column
+                    totalRowLabel: 'المجاميع', // For the footer row
+                    totalPercentageLabel: 'المجموع الكلي للنسب المئوية' // For the 100% check text
                 },
                 chartTitle: 'توزيع الاستجابات بالنسبة المئوية',
-                domainChartTitle: 'توزيع الاستجابات بالنسبة المئوية للمجال {number}',
-                domainAveragesChartTitle: 'متوسط توزيع النسبة المئوية عبر جميع المجالات',
+                domainChartTitle: '{number}', // Changed chart title
+                domainAveragesChartTitle: 'المتوسطات الكلية', // Changed chart title
                 dataOrientationLabel: 'اتجاه البيانات:',
                 orientationVertical: 'عمودي',
                 orientationHorizontal: 'أفقي',
@@ -441,9 +383,7 @@
                 scaleOrderSubtitle: 'أضف فئات الاستجابة وقم بترتيبها بالترتيب المطلوب (أعلى قيمة في الأعلى).',
                 scaleOrderEmpty: 'الرجاء إضافة فئة استجابة واحدة على الأقل.',
                 scaleOrderDuplicate: 'تم العثور على فئة استجابة مكررة. يرجى التأكد من أن جميع الفئات فريدة.',
-                trimItemsLabel: 'قص بنود الاستبيان (الاحتفاظ بالنص داخل [ ])',
-                positiveLabel: 'إيجابي',
-                positiveThresholdLabel: 'عتبة الإيجابيات (%):', // New translation
+                positiveLabel: 'إيجابي', // New translation
                 templateButtons: {
                     vertical: 'قالب عمودي',
                     horizontal: 'قالب أفقي'
@@ -458,8 +398,8 @@
                     htHeaderItem: 'البند',
                     htRowResp: 'المستجيب'
                 },
-                positiveItemsTitle: 'البنود الإيجابية',
-                negativeItemsTitle: 'البنود السلبية'
+                positiveItemsTitle: 'البنود الإيجابية', // Renamed title
+                negativeItemsTitle: 'البنود السلبية' // Renamed title
             }
         };
 
@@ -487,7 +427,7 @@
             'rgb(255, 99, 132)', // Red for disagree
             'rgb(201, 203, 207)'  // Grey for strongly disagree
         ];
-        
+
         let currentLang = 'en';
         let dataOrientation = 'vertical'; // Default data orientation
         let allCharts = {}; // Store chart instances to destroy them later
@@ -527,13 +467,10 @@
             resultsContainer.classList.add('hidden');
             chartContainer.classList.add('hidden');
             actionButtons.classList.add('hidden');
-            domainSection.classList.add('hidden');
             messageBox.classList.add('hidden');
             scaleOrderMessageBox.classList.add('hidden');
-            scaleOrderSection.classList.add('hidden'); // Hide scale order until parsed
-            domainMessageBox.classList.add('hidden'); // Hide domain message box
-            positiveNegativeItemsContainer.classList.add('hidden'); // Hide positive/negative items container
-            participantCountDisplay.textContent = ''; // Clear participant count on new file upload
+            scaleOrderSection.classList.add('hidden');
+            positiveNegativeItemsContainer.classList.add('hidden');
 
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -553,16 +490,11 @@
 
                     const identifiedResponses = new Set();
                     let dataToScanForResponses = [];
-                    let actualParticipantsCount = 0; // Initialize actual participant count
 
                     if (dataOrientation === 'vertical') {
                         dataToScanForResponses = parsedData.slice(1).flatMap(row => row.slice(1));
-                        // For vertical, participants are rows (excluding header)
-                        actualParticipantsCount = parsedData[0].length > 1 ? parsedData[0].slice(1).length : 0; // Number of response columns
                     } else {
                         dataToScanForResponses = parsedData.slice(1).flatMap(row => row.slice(1));
-                        // For horizontal, participants are columns (excluding first item column)
-                        actualParticipantsCount = parsedData.slice(1).length; // Number of data rows (each row is a participant)
                     }
 
                     dataToScanForResponses.forEach(response => {
@@ -596,14 +528,7 @@
                     });
 
                     renderScaleOptions(); // This will render and show the scale order section
-                    domainSection.classList.remove('hidden'); // Show domain section
                     actionButtons.classList.remove('hidden'); // Show action buttons
-
-                    // Display total items identified and participant count
-                    const totalItemsInFile = dataOrientation === 'vertical' ? parsedData.slice(1).length : parsedData[0].slice(1).length;
-                    if (totalItemsDisplay) totalItemsDisplay.textContent = languageData[currentLang].totalItemsDisplay.replace('{total}', totalItemsInFile);
-                    if (participantCountDisplay) participantCountDisplay.textContent = languageData[currentLang].participantCount.replace('{count}', actualParticipantsCount);
-
 
                     scaleOrderSection.classList.remove('hidden'); // Show ranking widget after file upload
                 } catch (error) {
@@ -629,25 +554,12 @@
                 return;
             }
 
-            const domainSizesInput = domainInput.value.trim();
-            const domainSizes = domainSizesInput.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n > 0);
-            
-            const totalItemsInFile = dataOrientation === 'vertical' ? storedParsedData.slice(1).length : storedParsedData[0].slice(1).length;
-            const totalItemsFromInput = domainSizes.reduce((sum, size) => sum + size, 0);
+            // Call the new domain-detection analysis function
+            displayDomainResults(storedParsedData);
 
-            if (domainSizes.length > 0 && totalItemsFromInput !== totalItemsInFile) {
-                showDomainMessage(languageData[currentLang].domainItemsError.replace('{sum}', totalItemsFromInput).replace('{total}', totalItemsInFile), 'error');
-                return;
-            }
-
-            if (domainSizes.length > 0) {
-                displayDomainResults(storedParsedData, domainSizes);
-            } else {
-                displayFullResults(storedParsedData);
-            }
             resultsContainer.classList.remove('hidden');
             chartContainer.classList.remove('hidden');
-            positiveNegativeItemsContainer.classList.remove('hidden'); // Show positive/negative items container
+            positiveNegativeItemsContainer.classList.remove('hidden');
         });
 
         // Function to display messages (error/info)
@@ -692,145 +604,8 @@
             }
         }
 
-        // Function to show messages specifically for domain section
-        function showDomainMessage(msg, type = 'info') {
-            domainMessageBox.classList.remove('hidden');
-            domainMessageText.textContent = msg;
-            if (type === 'error') {
-                domainMessageBox.classList.remove('bg-green-100', 'border-green-500', 'text-green-700');
-                domainMessageBox.classList.add('bg-red-100', 'border-red-500', 'text-red-700');
-                domainMessageBox.querySelector('svg path').setAttribute('fill-rule', 'evenodd');
-                domainMessageBox.querySelector('svg path').setAttribute('d', 'M10 18a8 8 0 100-16 8 8 0 000 16zm-1-8a1 112 0 1 11-2z');
-                domainMessageBox.querySelector('svg path').setAttribute('clip-rule', 'evenodd');
-                domainMessageTitle.textContent = languageData[currentLang].error;
-            } else {
-                domainMessageBox.classList.remove('bg-red-100', 'border-red-500', 'text-red-700');
-                domainMessageBox.classList.add('bg-green-100', 'border-green-500', 'text-green-700');
-                domainMessageBox.querySelector('svg path').removeAttribute('fill-rule');
-                domainMessageBox.querySelector('svg path').removeAttribute('d');
-                domainMessageBox.querySelector('svg path').setAttribute('d', 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z');
-                domainMessageTitle.textContent = 'Info!';
-            }
-        }
-
-        // Function to process and display results (full questionnaire)
-        function displayFullResults(data) {
-            resultsContainer.innerHTML = '';
-            chartContainer.innerHTML = ''; // Clear charts
-            positiveNegativeItemsContainer.innerHTML = ''; // Clear positive/negative items
-            destroyAllCharts(); // Destroy existing chart instances
-
-            let items;
-            let responses;
-
-            if (dataOrientation === 'vertical') {
-                items = data.slice(1).map(row => row[0]); // First column for items
-                responses = data.slice(1).map(row => row.slice(1)); // Remaining columns for responses
-            } else { // Horizontal
-                items = data[0].slice(1); // First row (from second column) for items
-                responses = transposeArray(data.slice(1).map(row => row.slice(1))); // Transpose responses, excluding ID column
-            }
-
-            if (enableItemTrimming) {
-                items = items.map(item => {
-                    const match = item.match(/\[(.*?)\]/);
-                    return match ? match[1] : item;
-                });
-            }
-
-            const totalRespondents = dataOrientation === 'vertical' ? (data[0].length > 1 ? data[0].slice(1).length : 0) : data.slice(1).length;
-
-
-            const tableData = [];
-
-            // Calculate overall frequencies and percentages for the full questionnaire
-            const overallFrequencies = {};
-            currentScaleOptions.forEach(option => overallFrequencies[option] = 0);
-
-            responses.forEach(itemResponses => {
-                itemResponses.forEach(response => {
-                    const trimmedResponse = String(response).trim();
-                    if (overallFrequencies.hasOwnProperty(trimmedResponse)) {
-                        overallFrequencies[trimmedResponse]++;
-                    }
-                });
-            });
-
-            // Calculate overall total for percentage calculation
-            const overallTotalResponses = Object.values(overallFrequencies).reduce((sum, count) => sum + count, 0);
-
-            // Populate currentResponseValueMap based on currentScaleOptions order
-            currentScaleOptions.forEach((option, index) => {
-                currentResponseValueMap[option] = currentScaleOptions.length - index;
-            });
-
-
-            // Process each item
-            items.forEach((item, index) => {
-                const itemResponses = responses[index];
-                const frequencies = {};
-                let positivesSum = 0; // Initialize positives sum for the item
-                currentScaleOptions.forEach(option => frequencies[option] = 0); // Initialize all options to 0
-
-                itemResponses.forEach(response => {
-                    const trimmedResponse = String(response).trim();
-                    if (frequencies.hasOwnProperty(trimmedResponse)) {
-                        frequencies[trimmedResponse]++;
-                    }
-                    if (positiveScaleOptions.has(trimmedResponse)) {
-                        positivesSum++; // Increment if the response is marked as positive
-                    }
-                });
-
-                const rowData = {
-                    item: item,
-                    frequencies: frequencies,
-                    totalResponses: itemResponses.length,
-                    mean: calculateMean(itemResponses), // Keep mean for sorting
-                    positives: positivesSum // Add the calculated positives sum
-                };
-                tableData.push(rowData);
-            });
-
-            // Do NOT sort table data by mean in descending order as per user request
-            // tableData.sort((a, b) => b.mean - a.mean);
-
-            // Render the main table
-            renderTable(tableData, 'full', resultsContainer);
-            
-            // Filter items for positive lists
-            const itemsWithPositives = tableData.map(item => ({
-                item: item.item,
-                positivesPercentage: item.totalResponses > 0 ? ((item.positives / item.totalResponses) * 100) : 0
-            }));
-
-            // Use the dynamic positiveThresholdPercentage
-            const highPositives = itemsWithPositives.filter(item => item.positivesPercentage >= positiveThresholdPercentage);
-            const lowPositives = itemsWithPositives.filter(item => item.positivesPercentage < positiveThresholdPercentage);
-
-            renderPositiveItemsLists(highPositives, lowPositives);
-
-
-            // Render the overall chart
-            const overallChartLabels = Object.keys(overallFrequencies);
-            const overallChartDataValues = Object.values(overallFrequencies);
-            const overallTotalResponsesForChart = overallChartDataValues.reduce((sum, val) => sum + val, 0);
-            const overallChartPercentages = overallChartDataValues.map(val => overallTotalResponsesForChart > 0 ? ((val / overallTotalResponsesForChart) * 100).toFixed(2) : 0);
-
-            const fullResultsDatasets = [{
-                label: 'Percentage',
-                data: overallChartPercentages,
-                backgroundColor: responseColors.slice(0, overallChartLabels.length),
-                borderColor: responseColors.slice(0, overallChartLabels.length).map(color => color.replace('rgb', 'rgba').replace(')', ', 1)')),
-                borderWidth: 1
-            }];
-            renderChart(overallChartLabels, fullResultsDatasets, 'fullResultsChart', languageData[currentLang].chartTitle);
-
-            actionButtons.classList.remove('hidden');
-        }
-
         // Function to process and display results by domain
-        function displayDomainResults(data, domainSizes) {
+        function displayDomainResults(data) {
             resultsContainer.innerHTML = '';
             chartContainer.innerHTML = ''; // Clear charts
             positiveNegativeItemsContainer.innerHTML = ''; // Clear positive/negative items
@@ -838,20 +613,13 @@
 
             let items;
             let responses;
-
             if (dataOrientation === 'vertical') {
                 items = data.slice(1).map(row => row[0]); // First column for items
                 responses = data.slice(1).map(row => row.slice(1)); // Remaining columns for responses
-            } else { // Horizontal
+            } else {
+                // Horizontal
                 items = data[0].slice(1); // First row (from second column) for items
                 responses = transposeArray(data.slice(1).map(row => row.slice(1))); // Transpose responses, excluding ID column
-            }
-
-            if (enableItemTrimming) {
-                items = items.map(item => {
-                    const match = item.match(/\[(.*?)\]/);
-                    return match ? match[1] : item;
-                });
             }
 
             // Populate currentResponseValueMap based on currentScaleOptions order
@@ -859,22 +627,53 @@
                 currentResponseValueMap[option] = currentScaleOptions.length - index;
             });
 
-            let itemIndex = 0;
+            // Auto-detect domains based on the pattern "Domain Name [Item Text]"
+            const domainGroups = {};
+            const domainNames = []; // Keep track of domain names in order
+            
+            items.forEach((item, index) => {
+                const match = String(item).match(/(.+) \[(.+)\]/);
+                let itemText;
+                let domainName;
+                if (match) {
+                    domainName = match[1].trim();
+                    itemText = match[2].trim();
+                } else {
+                    domainName = 'General'; // Default domain for items without a specified domain
+                    itemText = String(item).trim();
+                }
+
+                if (domainNames.length === 0 || domainNames[domainNames.length - 1] !== domainName) {
+                    domainNames.push(domainName);
+                }
+
+                if (!domainGroups[domainName]) {
+                    domainGroups[domainName] = {
+                        items: [],
+                        responses: []
+                    };
+                }
+
+                domainGroups[domainName].items.push(itemText);
+                domainGroups[domainName].responses.push(responses[index]);
+            });
+            
             const domainAverages = []; // To store domain averages for the overall domain table
             const allItemsWithPositives = []; // To collect all items for combined positive lists
 
-            domainSizes.forEach((size, domainNum) => {
-                const domainItems = items.slice(itemIndex, itemIndex + size);
-                const domainResponses = responses.slice(itemIndex, itemIndex + size);
+            let domainNum = 0;
+            domainNames.forEach(domainName => {
+                domainNum++;
+                const domain = domainGroups[domainName];
+                const domainItems = domain.items;
+                const domainResponses = domain.responses;
 
                 const tableData = [];
                 domainItems.forEach((item, index) => {
-                    const originalItemIndex = itemIndex + index; // Index in the original responses array
                     const itemResponses = domainResponses[index];
                     const frequencies = {};
-                    let positivesSum = 0; // Initialize positives sum for the item
+                    let positivesSum = 0;
                     currentScaleOptions.forEach(option => frequencies[option] = 0);
-
                     itemResponses.forEach(response => {
                         const trimmedResponse = String(response).trim();
                         if (frequencies.hasOwnProperty(trimmedResponse)) {
@@ -884,772 +683,571 @@
                             positivesSum++;
                         }
                     });
-
                     const rowData = {
                         item: item,
                         frequencies: frequencies,
                         totalResponses: itemResponses.length,
-                        mean: calculateMean(itemResponses), // Keep mean for sorting
+                        mean: calculateMean(itemResponses),
                         positives: positivesSum
                     };
                     tableData.push(rowData);
-                    allItemsWithPositives.push({
-                        item: item,
-                        positivesPercentage: rowData.totalResponses > 0 ? ((rowData.positives / rowData.totalResponses) * 100) : 0
-                    });
+                    allItemsWithPositives.push({ item: item, positivesPercentage: itemResponses.length > 0 ? ((positivesSum / itemResponses.length) * 100) : 0 });
                 });
 
-                // Do NOT sort table data by mean in descending order as per user request
-                // tableData.sort((a, b) => b.mean - a.mean);
+                // Sort table data by mean in descending order
+                tableData.sort((a, b) => b.mean - a.mean);
 
-                // Render table for the current domain
-                renderTable(tableData, `domain-${domainNum + 1}`, resultsContainer, languageData[currentLang].domainNumber.replace('{number}', domainNum + 1));
+                // Render the table for this domain
+                renderTable(tableData, domainName, resultsContainer); // Pass domainName directly as title
 
-                // Calculate average percentages and positives for the current domain
-                const domainTotalResponses = domainResponses.flat().filter(r => String(r).trim() !== '').length;
-                const domainScalePercentages = {};
-                currentScaleOptions.forEach(option => domainScalePercentages[option] = 0);
-                let domainPositivesSum = 0;
-
-                domainResponses.forEach(itemResponses => {
-                    itemResponses.forEach(response => {
-                        const trimmedResponse = String(response).trim();
-                        if (domainScalePercentages.hasOwnProperty(trimmedResponse)) {
-                            domainScalePercentages[trimmedResponse]++;
-                        }
-                        if (positiveScaleOptions.has(trimmedResponse)) {
-                            domainPositivesSum++;
-                        }
-                    });
+                // Calculate domain averages for the domain averages table
+                const domainAverageFrequencies = {};
+                currentScaleOptions.forEach(option => domainAverageFrequencies[option] = 0);
+                tableData.forEach(rowData => {
+                    for (const option in rowData.frequencies) {
+                        domainAverageFrequencies[option] += rowData.frequencies[option];
+                    }
                 });
-
-                // Convert raw frequencies to percentages for the domain
-                for (const option in domainScalePercentages) {
-                    domainScalePercentages[option] = domainTotalResponses > 0 ? ((domainScalePercentages[option] / domainTotalResponses) * 100) : 0;
-                }
-                const domainAvgPositivesPercentage = domainTotalResponses > 0 ? ((domainPositivesSum / domainTotalResponses) * 100) : 0;
-
-                const domainMean = tableData.reduce((sum, row) => sum + row.mean, 0) / tableData.length;
-
+                const domainTotalResponsesInDomain = domainResponses.flat().filter(r => String(r).trim() !== '').length;
                 domainAverages.push({
-                    domain: languageData[currentLang].domainNumber.replace('{number}', domainNum + 1),
-                    mean: domainMean, // Keep mean for overall domain average chart
-                    rank: 0, // Placeholder for rank, to be filled after sorting
-                    scalePercentages: domainScalePercentages, // Average percentages for each scale in this domain
-                    avgPositivesPercentage: domainAvgPositivesPercentage
+                    domainName: domainName,
+                    frequencies: domainAverageFrequencies,
+                    totalResponses: domainTotalResponsesInDomain,
+                    mean: calculateMean([...domainResponses.flat()])
                 });
-
-                // Render chart for the current domain
-                const domainOverallFrequencies = {};
-                currentScaleOptions.forEach(option => domainOverallFrequencies[option] = 0);
-
-                domainResponses.forEach(itemResponses => {
-                    itemResponses.forEach(response => {
-                        const trimmedResponse = String(response).trim();
-                        if (domainOverallFrequencies.hasOwnProperty(trimmedResponse)) {
-                            domainOverallFrequencies[trimmedResponse]++;
-                        }
-                    });
-                });
-                const domainChartLabelsForCurrentDomain = Object.keys(domainOverallFrequencies);
-                const domainChartDataValuesForCurrentDomain = Object.values(domainOverallFrequencies);
-                const domainTotalResponsesForChart = domainChartDataValuesForCurrentDomain.reduce((sum, val) => sum + val, 0);
-                const domainChartPercentagesForCurrentDomain = domainChartDataValuesForCurrentDomain.map(val => domainTotalResponsesForChart > 0 ? ((val / domainTotalResponsesForChart) * 100).toFixed(2) : 0);
-
-                const domainResultsDatasets = [{
+                const domainChartLabels = Object.keys(domainAverageFrequencies);
+                const domainChartDataValues = Object.values(domainAverageFrequencies);
+                const domainChartTotalResponses = domainChartDataValues.reduce((sum, val) => sum + val, 0);
+                const domainChartPercentages = domainChartDataValues.map(val => domainChartTotalResponses > 0 ? ((val / domainChartTotalResponses) * 100).toFixed(2) : 0);
+                const domainDatasets = [{
                     label: 'Percentage',
-                    data: domainChartPercentagesForCurrentDomain,
-                    backgroundColor: responseColors.slice(0, domainChartLabelsForCurrentDomain.length),
-                    borderColor: responseColors.slice(0, domainChartLabelsForCurrentDomain.length).map(color => color.replace('rgb', 'rgba').replace(')', ', 1)')),
+                    data: domainChartPercentages,
+                    backgroundColor: responseColors.slice(0, domainChartLabels.length),
+                    borderColor: responseColors.slice(0, domainChartLabels.length).map(color => color.replace('rgb', 'rgba').replace(')', ', 1)')),
                     borderWidth: 1
                 }];
-                renderChart(domainChartLabelsForCurrentDomain, domainResultsDatasets, `domainChart-${domainNum + 1}`, languageData[currentLang].domainChartTitle.replace('{number}', domainNum + 1), false, `chartContainer`);
-
-
-                itemIndex += size;
+                renderChart(domainChartLabels, domainDatasets, `domainChart${domainNum}`, languageData[currentLang].domainChartTitle.replace('{number}', domainName));
             });
+            // Render the domain averages table
+            renderDomainAveragesTable(domainAverages);
 
-            // Filter items for positive lists (after all domains are processed)
-            // Use the dynamic positiveThresholdPercentage
-            const highPositives = allItemsWithPositives.filter(item => item.positivesPercentage >= positiveThresholdPercentage);
-            const lowPositives = allItemsWithPositives.filter(item => item.positivesPercentage < positiveThresholdPercentage);
+            const positivesThreshold = parseInt(positivesThresholdInput.value, 10);
+            const highPositives = allItemsWithPositives.filter(item => item.positivesPercentage >= positivesThreshold);
+            const lowPositives = allItemsWithPositives.filter(item => item.positivesPercentage < positivesThreshold);
             renderPositiveItemsLists(highPositives, lowPositives);
 
+            renderOverallDomainAveragesChart(domainAverages);
+        }
 
-            // Sort domain averages by mean in descending order and add ranks
-            domainAverages.sort((a, b) => b.mean - a.mean);
-            domainAverages.forEach((domain, idx) => {
-                domain.rank = idx + 1;
+        // Function to process and display results (full questionnaire - legacy function, kept for now)
+        function displayFullResults(data) {
+            resultsContainer.innerHTML = '';
+            chartContainer.innerHTML = '';
+            positiveNegativeItemsContainer.innerHTML = '';
+            destroyAllCharts();
+
+            let items;
+            let responses;
+            if (dataOrientation === 'vertical') {
+                items = data.slice(1).map(row => row[0]);
+                responses = data.slice(1).map(row => row.slice(1));
+            } else {
+                items = data[0].slice(1);
+                responses = transposeArray(data.slice(1).map(row => row.slice(1)));
+            }
+
+            const tableData = [];
+
+            const overallFrequencies = {};
+            currentScaleOptions.forEach(option => overallFrequencies[option] = 0);
+            responses.forEach(itemResponses => {
+                itemResponses.forEach(response => {
+                    const trimmedResponse = String(response).trim();
+                    if (overallFrequencies.hasOwnProperty(trimmedResponse)) {
+                        overallFrequencies[trimmedResponse]++;
+                    }
+                });
             });
 
-            // Render overall domain averages table
-            renderDomainAveragesTable(domainAverages, resultsContainer);
-
-            // Add chart for domain averages (simple bar chart showing average percentages per scale option)
-            const overallAverageScalePercentages = {};
-            currentScaleOptions.forEach(option => {
-                const sumOfAvgPercsForOption = domainAverages.reduce((sum, domain) => sum + (domain.scalePercentages[option] || 0), 0);
-                overallAverageScalePercentages[option] = sumOfAvgPercsForOption / domainAverages.length;
+            currentScaleOptions.forEach((option, index) => {
+                currentResponseValueMap[option] = currentScaleOptions.length - index;
             });
 
-            const domainAveragesChartLabels = Object.keys(overallAverageScalePercentages);
-            const domainAveragesChartDatasets = [{
-                label: 'Average Percentage',
-                data: Object.values(overallAverageScalePercentages).map(val => val.toFixed(2)),
-                backgroundColor: responseColors.slice(0, domainAveragesChartLabels.length),
-                borderColor: responseColors.slice(0, domainAveragesChartLabels.length).map(color => color.replace('rgb', 'rgba').replace(')', ', 1)')),
+            items.forEach((item, index) => {
+                const itemResponses = responses[index];
+                const frequencies = {};
+                let positivesSum = 0;
+                currentScaleOptions.forEach(option => frequencies[option] = 0);
+                itemResponses.forEach(response => {
+                    const trimmedResponse = String(response).trim();
+                    if (frequencies.hasOwnProperty(trimmedResponse)) {
+                        frequencies[trimmedResponse]++;
+                    }
+                    if (positiveScaleOptions.has(trimmedResponse)) {
+                        positivesSum++;
+                    }
+                });
+                const rowData = {
+                    item: item,
+                    frequencies: frequencies,
+                    totalResponses: itemResponses.length,
+                    mean: calculateMean(itemResponses),
+                    positives: positivesSum
+                };
+                tableData.push(rowData);
+            });
+
+            tableData.sort((a, b) => b.mean - a.mean);
+
+            renderTable(tableData, 'full', resultsContainer);
+
+            const positivesThreshold = parseInt(positivesThresholdInput.value, 10);
+            const itemsWithPositives = tableData.map(item => ({
+                item: item.item,
+                positivesPercentage: item.totalResponses > 0 ? ((item.positives / item.totalResponses) * 100) : 0
+            }));
+            const highPositives = itemsWithPositives.filter(item => item.positivesPercentage >= positivesThreshold);
+            const lowPositives = itemsWithPositives.filter(item => item.positivesPercentage < positivesThreshold);
+            renderPositiveItemsLists(highPositives, lowPositives);
+
+            const overallChartLabels = Object.keys(overallFrequencies);
+            const overallChartDataValues = Object.values(overallFrequencies);
+            const overallChartTotalResponses = overallChartDataValues.reduce((sum, val) => sum + val, 0);
+            const overallChartPercentages = overallChartDataValues.map(val => overallChartTotalResponses > 0 ? ((val / overallChartTotalResponses) * 100).toFixed(2) : 0);
+            const fullResultsDatasets = [{
+                label: 'Percentage',
+                data: overallChartPercentages,
+                backgroundColor: responseColors.slice(0, overallChartLabels.length),
+                borderColor: responseColors.slice(0, overallChartLabels.length).map(color => color.replace('rgb', 'rgba').replace(')', ', 1)')),
                 borderWidth: 1
             }];
-
-            renderChart(
-                domainAveragesChartLabels,
-                domainAveragesChartDatasets,
-                'domainAveragesChart',
-                languageData[currentLang].domainAveragesChartTitle,
-                false // This is a simple bar chart now
-            );
-
+            renderChart(overallChartLabels, fullResultsDatasets, 'fullResultsChart', languageData[currentLang].chartTitle);
             actionButtons.classList.remove('hidden');
-            chartContainer.classList.remove('hidden');
-            positiveNegativeItemsContainer.classList.remove('hidden'); // Show positive/negative items container
+        }
+        
+        // Function to create a table dynamically
+        function renderTable(tableData, title, container) {
+            const domainId = title.replace(/\s+/g, '-');
+            const tableDiv = document.createElement('div');
+            tableDiv.classList.add('table-container', 'mb-8');
+            tableDiv.innerHTML = `
+                <h2 class="text-xl font-bold text-center mb-4 text-gray-800">${title}</h2>
+                <div class="overflow-x-auto rounded-lg shadow-md border border-gray-200">
+                    <table class="min-w-full divide-y divide-gray-200" id="resultsTable-${domainId}">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${languageData[currentLang].tableHeaders.no}</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${languageData[currentLang].tableHeaders.item}</th>
+                                ${currentScaleOptions.map(option => `<th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${option}</th>`).join('')}
+                                <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${languageData[currentLang].tableHeaders.positives}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200 text-sm text-gray-700">
+                            ${tableData.map((row, index) => `
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-left font-medium">${index + 1}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-left font-medium">${row.item}</td>
+                                    ${currentScaleOptions.map(option => {
+                                        const count = row.frequencies[option] || 0;
+                                        const percentage = row.totalResponses > 0 ? ((count / row.totalResponses) * 100).toFixed(2) : 0;
+                                        return `<td class="px-6 py-4 whitespace-nowrap text-left">${percentage}%</td>`;
+                                    }).join('')}
+                                    <td class="px-6 py-4 whitespace-nowrap text-left font-semibold text-blue-600">${row.totalResponses > 0 ? ((row.positives / row.totalResponses) * 100).toFixed(2) : 0}%</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                        <tfoot class="bg-gray-100 font-bold">
+                            <tr>
+                                <td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider" colspan="2">${languageData[currentLang].tableHeaders.totalRowLabel}</td>
+                                ${currentScaleOptions.map(option => {
+                                    const totalCountForOption = tableData.reduce((sum, row) => sum + (row.frequencies[option] || 0), 0);
+                                    const overallTotalResponses = tableData.reduce((sum, row) => sum + row.totalResponses, 0);
+                                    const totalPercentage = overallTotalResponses > 0 ? ((totalCountForOption / overallTotalResponses) * 100).toFixed(2) : 0;
+                                    return `<td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${totalPercentage}%</td>`;
+                                }).join('')}
+                                ${(() => {
+                                    const totalPositivesCount = tableData.reduce((sum, row) => sum + row.positives, 0);
+                                    const overallTotalResponses = tableData.reduce((sum, row) => sum + row.totalResponses, 0);
+                                    const overallPositivesPercentage = overallTotalResponses > 0 ? ((totalPositivesCount / overallTotalResponses) * 100).toFixed(2) : 0;
+                                    return `<td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${overallPositivesPercentage}%</td>`;
+                                })()}
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            `;
+            container.appendChild(tableDiv);
         }
 
-        // Function to render a table
-        function renderTable(data, tableId, containerElement, title = '') {
-            const tableWrapper = document.createElement('div');
-            tableWrapper.className = 'mb-8 p-6 bg-gray-50 rounded-xl shadow-inner';
-            if (title) {
-                const titleElem = document.createElement('h2');
-                titleElem.className = 'text-xl font-bold text-gray-700 mb-4 text-center';
-                titleElem.textContent = title;
-                tableWrapper.appendChild(titleElem);
-            }
+        // Function to create and render the domain averages table
+        function renderDomainAveragesTable(domainAverages) {
+            const tableDiv = document.createElement('div');
+            tableDiv.classList.add('table-container', 'mb-8');
+            tableDiv.innerHTML = `
+                <h2 class="text-xl font-bold text-center mb-4 text-gray-800">${languageData[currentLang].domainAverages}</h2>
+                <div class="overflow-x-auto rounded-lg shadow-md border border-gray-200">
+                    <table class="min-w-full divide-y divide-gray-200" id="domainAveragesTable">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">#</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">Domain Name</th>
+                                ${currentScaleOptions.map(option => `<th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${option}</th>`).join('')}
+                                <th class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">Positives</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200 text-sm text-gray-700">
+                            ${domainAverages.map((domain, index) => {
+                                const totalPositiveResponses = Array.from(positiveScaleOptions).reduce((sum, option) => sum + (domain.frequencies[option] || 0), 0);
+                                const totalResponses = domain.totalResponses;
+                                const positivesPercentage = totalResponses > 0 ? ((totalPositiveResponses / totalResponses) * 100).toFixed(2) : 0;
 
-            const table = document.createElement('table');
-            table.id = tableId;
-            table.className = 'min-w-full bg-white border border-gray-300 rounded-lg overflow-hidden shadow-sm text-sm';
-
-            // Create table header
-            const thead = document.createElement('thead');
-            thead.className = 'bg-gray-100';
-            const headerRow = document.createElement('tr');
-
-            // Headers order: No., Item, Scale Options (%), Total (%), Positives (%)
-            const headers = [
-                languageData[currentLang].tableHeaders.no,
-                languageData[currentLang].tableHeaders.item,
-                ...currentScaleOptions.map(option => `${option} (%)`), // Header will be like "Agree (%)"
-                `${languageData[currentLang].tableHeaders.totalColumn} (%)`, // Total 100% column (moved before Positives)
-                `${languageData[currentLang].tableHeaders.positives} (%)` // Positives header
-            ];
-
-            headers.forEach(headerText => {
-                const th = document.createElement('th');
-                th.className = 'px-4 py-2 text-left text-gray-600 font-semibold uppercase border-b border-gray-300';
-                th.textContent = headerText;
-                headerRow.appendChild(th);
-            });
-            thead.appendChild(headerRow);
-            table.appendChild(thead);
-
-            // Create table body
-            const tbody = document.createElement('tbody');
-            tbody.className = 'divide-y divide-gray-200';
-
-            data.forEach((rowData, idx) => {
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-gray-50';
-
-                const tdNo = document.createElement('td');
-                tdNo.className = 'px-4 py-2 border-b border-gray-300 whitespace-nowrap';
-                tdNo.textContent = idx + 1;
-                tr.appendChild(tdNo);
-
-                const tdItem = document.createElement('td');
-                tdItem.className = 'px-4 py-2 border-b border-gray-300';
-                tdItem.textContent = rowData.item;
-                tr.appendChild(tdItem);
-
-                // Calculate sum of percentages for current row to ensure 100% for the row
-                let sumOfCurrentRowPercentages = 0;
-                const percentageCells = []; // Store cells to append them in order
-
-                currentScaleOptions.forEach(option => {
-                    const frequency = rowData.frequencies[option] || 0;
-                    const percentage = rowData.totalResponses > 0 ? ((frequency / rowData.totalResponses) * 100) : 0;
-                    percentageCells.push(`${percentage.toFixed(2)}%`); // Store formatted percentage
-                    sumOfCurrentRowPercentages += percentage;
-                });
-
-                percentageCells.forEach(text => {
-                    const tdPerc = document.createElement('td');
-                    tdPerc.className = 'px-4 py-2 border-b border-gray-300 text-center whitespace-nowrap';
-                    tdPerc.textContent = text;
-                    tr.appendChild(tdPerc);
-                });
-
-                const tdTotal = document.createElement('td');
-                tdTotal.className = 'px-4 py-2 border-b border-gray-300 text-center whitespace-nowrap';
-                tdTotal.textContent = `${sumOfCurrentRowPercentages.toFixed(2)}%`; // Total for the row
-                tr.appendChild(tdTotal);
-
-                const tdPositives = document.createElement('td');
-                tdPositives.className = 'px-4 py-2 border-b border-gray-300 text-center whitespace-nowrap';
-                const positivesPercentage = rowData.totalResponses > 0 ? ((rowData.positives / rowData.totalResponses) * 100).toFixed(2) : 0;
-                tdPositives.textContent = `${positivesPercentage}%`; // Display positives as percentage
-                tr.appendChild(tdPositives);
-
-                tbody.appendChild(tr);
-            });
-
-            table.appendChild(tbody);
-            tableWrapper.appendChild(table);
-            containerElement.appendChild(tableWrapper);
-
-            // Add tfoot for totals
-            let totalResponsesSumForAllItems = 0;
-            const overallFrequenciesByScaleOption = {};
-            currentScaleOptions.forEach(option => overallFrequenciesByScaleOption[option] = 0);
-            let totalPositivesCount = 0; // Sum of raw positives counts across all items
-
-            data.forEach(rowData => {
-                totalResponsesSumForAllItems += rowData.totalResponses;
-                totalPositivesCount += rowData.positives;
-                currentScaleOptions.forEach(option => {
-                    overallFrequenciesByScaleOption[option] += (rowData.frequencies[option] || 0);
-                });
-            });
-
-            const tfoot = document.createElement('tfoot');
-            tfoot.className = 'bg-gray-100 font-bold';
-            const totalRow = document.createElement('tr');
-
-            const tdTotalLabel = document.createElement('td');
-            tdTotalLabel.className = 'px-4 py-2 text-left text-gray-800 border-t border-gray-300';
-            tdTotalLabel.setAttribute('colspan', 2); // Span over No. and Item
-            tdTotalLabel.textContent = languageData[currentLang].tableHeaders.totalRowLabel;
-            totalRow.appendChild(tdTotalLabel);
-
-            let overallPercentageSumCheck = 0; // To sum percentages to check for 100%
-
-            currentScaleOptions.forEach(option => {
-                const tdTotalPerc = document.createElement('td');
-                tdTotalPerc.className = 'px-4 py-2 text-center border-t border-gray-300 whitespace-nowrap';
-                const totalFreqForOption = overallFrequenciesByScaleOption[option];
-                const totalPercForOption = totalResponsesSumForAllItems > 0 ? ((totalFreqForOption / totalResponsesSumForAllItems) * 100) : 0;
-                tdTotalPerc.textContent = `${totalPercForOption.toFixed(2)}%`; // Only display percentage
-                totalRow.appendChild(tdTotalPerc);
-                overallPercentageSumCheck += totalPercForOption; // Sum the actual float for accuracy
-            });
-
-            const tdGrandTotal = document.createElement('td'); // Total of percentages (100%)
-            tdGrandTotal.className = 'px-4 py-2 border-t border-gray-300 whitespace-nowrap';
-            tdGrandTotal.textContent = `${overallPercentageSumCheck.toFixed(2)}%`; // Should be close to 100%
-            totalRow.appendChild(tdGrandTotal);
-
-            const tdPositives = document.createElement('td'); // Use tdPositives directly
-            tdPositives.className = 'px-4 py-2 text-center border-t border-gray-300 whitespace-nowrap';
-            const overallPositivesPercentage = totalResponsesSumForAllItems > 0 ? ((totalPositivesCount / totalResponsesSumForAllItems) * 100).toFixed(2) : 0;
-            tdPositives.textContent = `${overallPositivesPercentage}%`; // Display overall positives as percentage
-            totalRow.appendChild(tdPositives);
-
-            tfoot.appendChild(totalRow);
-            table.appendChild(tfoot);
-
-            // Add the 100% check text after the table
-            const totalPercentageCheckText = document.createElement('p');
-            totalPercentageCheckText.className = 'total-percentage-check-text text-center text-gray-700 mt-4 font-semibold';
-            totalPercentageCheckText.textContent = `${languageData[currentLang].tableHeaders.totalPercentageLabel}: ${overallPercentageSumCheck.toFixed(2)}%`;
-            tableWrapper.appendChild(totalPercentageCheckText);
+                                return `
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-left font-medium">${index + 1}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-left font-medium">${domain.domainName}</td>
+                                    ${currentScaleOptions.map(option => {
+                                        const count = domain.frequencies[option] || 0;
+                                        const percentage = domain.totalResponses > 0 ? ((count / domain.totalResponses) * 100).toFixed(2) : 0;
+                                        return `<td class="px-6 py-4 whitespace-nowrap text-left">${percentage}%</td>`;
+                                    }).join('')}
+                                    <td class="px-6 py-4 whitespace-nowrap text-left">${positivesPercentage}%</td>
+                                </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                        <tfoot class="bg-gray-100 font-bold">
+                            <tr>
+                                <td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider" colspan="2">${languageData[currentLang].tableHeaders.totalRowLabel}</td>
+                                ${currentScaleOptions.map(option => {
+                                    const avgPercentageForOption = domainAverages.reduce((sum, domain) => {
+                                        const totalResponsesInDomain = domain.totalResponses;
+                                        const count = domain.frequencies[option] || 0;
+                                        return sum + (totalResponsesInDomain > 0 ? (count / totalResponsesInDomain) * 100 : 0);
+                                    }, 0) / (domainAverages.length || 1); // Protect against division by zero if domainAverages is empty
+                                    return `<td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${avgPercentageForOption.toFixed(2)}%</td>`;
+                                }).join('')}
+                                ${(() => {
+                                    const overallAvgPositivesPercentage = domainAverages.reduce((sum, domain) => {
+                                        const totalPositiveResponses = Array.from(positiveScaleOptions).reduce((pSum, pOption) => pSum + (domain.frequencies[pOption] || 0), 0);
+                                        const totalResponses = domain.totalResponses;
+                                        return sum + (totalResponses > 0 ? (totalPositiveResponses / totalResponses) * 100 : 0);
+                                    }, 0) / (domainAverages.length || 1); // Protect against division by zero if domainAverages is empty
+                                    return `<td class="px-6 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">${overallAvgPositivesPercentage.toFixed(2)}%</td>`;
+                                })()}
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            `;
+            resultsContainer.appendChild(tableDiv);
         }
 
-        // Function to render the overall domain averages table
-        function renderDomainAveragesTable(domainAverages, containerElement) {
-            const tableWrapper = document.createElement('div');
-            tableWrapper.className = 'mb-8 p-6 bg-gray-50 rounded-xl shadow-inner';
-
-            const titleElem = document.createElement('h2');
-            titleElem.className = 'text-xl font-bold text-gray-700 mb-4 text-center';
-            titleElem.textContent = languageData[currentLang].domainAverages;
-            tableWrapper.appendChild(titleElem);
-
-            const table = document.createElement('table');
-            table.id = 'domainAveragesTable';
-            table.className = 'min-w-full bg-white border border-gray-300 rounded-lg overflow-hidden shadow-sm text-sm';
-
-            // Create table header
-            const thead = document.createElement('thead');
-            thead.className = 'bg-gray-100';
-            const headerRow = document.createElement('tr');
-
-            const headers = [
-                languageData[currentLang].tableHeaders.no,
-                languageData[currentLang].tableHeaders.item.replace('Item', 'Domain'), // "Domain" column
-                ...currentScaleOptions.map(option => `${option} (%)`), // Scale percentages
-                `${languageData[currentLang].tableHeaders.totalColumn} (%)`, // Total 100% column
-                `${languageData[currentLang].tableHeaders.positives} (%)` // Positives as percentage
-            ];
-
-            headers.forEach(headerText => {
-                const th = document.createElement('th');
-                th.className = 'px-4 py-2 text-left text-gray-600 font-semibold uppercase border-b border-gray-300';
-                th.textContent = headerText;
-                headerRow.appendChild(th);
-            });
-            thead.appendChild(headerRow);
-            table.appendChild(thead);
-
-            // Create table body
-            const tbody = document.createElement('tbody');
-            tbody.className = 'divide-y divide-gray-200';
-
-            domainAverages.forEach((domainData, idx) => {
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-gray-50';
-
-                const tdNo = document.createElement('td');
-                tdNo.className = 'px-4 py-2 border-b border-gray-300 whitespace-nowrap';
-                tdNo.textContent = idx + 1;
-                tr.appendChild(tdNo);
-
-                const tdDomain = document.createElement('td');
-                tdDomain.className = 'px-4 py-2 border-b border-gray-300';
-                tdDomain.textContent = domainData.domain;
-                tr.appendChild(tdDomain);
-
-                let sumOfCurrentRowPercentages = 0;
-                const percentageCells = []; // Store cells to append them in order
-
-                currentScaleOptions.forEach(option => {
-                    const percentage = domainData.scalePercentages[option] || 0;
-                    percentageCells.push(`${percentage.toFixed(2)}%`);
-                    sumOfCurrentRowPercentages += percentage;
-                });
-
-                percentageCells.forEach(text => {
-                    const tdPerc = document.createElement('td');
-                    tdPerc.className = 'px-4 py-2 border-b border-gray-300 text-center whitespace-nowrap';
-                    tdPerc.textContent = text;
-                    tr.appendChild(tdPerc);
-                });
-
-                const tdTotal = document.createElement('td');
-                tdTotal.className = 'px-4 py-2 border-b border-gray-300 text-center whitespace-nowrap';
-                tdTotal.textContent = `${sumOfCurrentRowPercentages.toFixed(2)}%`;
-                tr.appendChild(tdTotal);
-
-                const tdPositives = document.createElement('td');
-                tdPositives.className = 'px-4 py-2 border-b border-gray-300 text-center whitespace-nowrap';
-                tdPositives.textContent = `${domainData.avgPositivesPercentage.toFixed(2)}%`;
-                tr.appendChild(tdPositives);
-
-                tbody.appendChild(tr);
-            });
-
-            table.appendChild(tbody);
-            
-            // Add tfoot for overall totals (averages of percentages across all domains)
-            const tfoot = document.createElement('tfoot');
-            tfoot.className = 'bg-gray-100 font-bold';
-            const overallTotalRow = document.createElement('tr');
-
-            const tdOverallLabel = document.createElement('td');
-            tdOverallLabel.className = 'px-4 py-2 text-left text-gray-800 border-t border-gray-300';
-            tdOverallLabel.setAttribute('colspan', 2); // Span over No. and Domain
-            tdOverallLabel.textContent = languageData[currentLang].tableHeaders.totalRowLabel;
-            overallTotalRow.appendChild(tdOverallLabel);
-
-            let overallTotalPercentageCheck = 0;
-            const overallTotalPositivesPercentage = domainAverages.reduce((sum, domain) => sum + domain.avgPositivesPercentage, 0) / domainAverages.length;
-
-
-            currentScaleOptions.forEach(option => {
-                const avgOfScalePercs = domainAverages.reduce((sum, domain) => sum + (domain.scalePercentages[option] || 0), 0) / domainAverages.length;
-                const tdOverallPerc = document.createElement('td');
-                tdOverallPerc.className = 'px-4 py-2 text-center border-t border-gray-300 whitespace-nowrap';
-                tdOverallPerc.textContent = `${avgOfScalePercs.toFixed(2)}%`;
-                overallTotalRow.appendChild(tdOverallPerc);
-                overallTotalPercentageCheck += avgOfScalePercs;
-            });
-            
-            const tdOverallGrandTotal = document.createElement('td');
-            tdOverallGrandTotal.className = 'px-4 py-2 text-center border-t border-gray-300 whitespace-nowrap';
-            tdOverallGrandTotal.textContent = `${overallTotalPercentageCheck.toFixed(2)}%`;
-            overallTotalRow.appendChild(tdOverallGrandTotal);
-
-            const tdPositives = document.createElement('td');
-            tdPositives.className = 'px-4 py-2 text-center border-t border-gray-300 whitespace-nowrap';
-            tdPositives.textContent = `${overallTotalPositivesPercentage.toFixed(2)}%`; // Fixed: Use overallTotalPositivesPercentage
-            overallTotalRow.appendChild(tdPositives);
-
-            tfoot.appendChild(overallTotalRow);
-            table.appendChild(tfoot);
-
-            // Add the 100% check text after the table
-            const totalPercentageCheckText = document.createElement('p');
-            totalPercentageCheckText.className = 'total-percentage-check-text text-center text-gray-700 mt-4 font-semibold';
-            totalPercentageCheckText.textContent = `${languageData[currentLang].tableHeaders.totalPercentageLabel}: ${overallTotalPercentageCheck.toFixed(2)}%`;
-            tableWrapper.appendChild(totalPercentageCheckText);
-
-
-            tableWrapper.appendChild(table);
-            containerElement.appendChild(tableWrapper);
-        }
-
-        // Function to render the new positive/negative items lists
+        // Function to render positive and negative items lists
         function renderPositiveItemsLists(highPositives, lowPositives) {
-            positiveNegativeItemsContainer.innerHTML = ''; // Clear previous content
+            positiveNegativeItemsContainer.innerHTML = '';
+            const positivesThreshold = parseInt(positivesThresholdInput.value, 10);
 
-            const listSection = document.createElement('div');
-            listSection.className = 'mb-8 p-6 bg-gray-50 rounded-xl shadow-inner grid grid-cols-1 md:grid-cols-2 gap-8';
-
-            // High Positives List
             const highPositivesDiv = document.createElement('div');
-            highPositivesDiv.className = 'flex flex-col';
-            const highPositivesTitle = document.createElement('h2');
-            highPositivesTitle.className = 'text-xl font-bold text-gray-700 mb-4 text-center';
-            highPositivesTitle.textContent = languageData[currentLang].positiveItemsTitle; // Use new title
-            highPositivesDiv.appendChild(highPositivesTitle);
-            const highPositivesParagraph = document.createElement('p');
-            highPositivesParagraph.className = 'text-gray-700 text-center';
-            if (highPositives.length > 0) {
-                highPositivesParagraph.textContent = highPositives.map(item => item.item).join(' & '); // Join with &
-            } else {
-                highPositivesParagraph.textContent = 'No items in this category.';
-            }
-            highPositivesDiv.appendChild(highPositivesParagraph);
-            listSection.appendChild(highPositivesDiv);
+            highPositivesDiv.classList.add('my-8', 'p-6', 'bg-green-50', 'rounded-lg', 'shadow');
+            highPositivesDiv.innerHTML = `
+                <h3 class="text-xl font-bold text-green-700 mb-4">${languageData[currentLang].positiveItemsTitle} (>= ${positivesThreshold}%)</h3>
+                ${highPositives.length > 0 ?
+                    `<ul class="list-disc list-inside space-y-2 text-green-800">
+                        ${highPositives.map(item => `<li>${item.item}</li>`).join('')}
+                    </ul>` :
+                    `<p class="text-green-800">No items meet this threshold.</p>`
+                }
+            `;
+            positiveNegativeItemsContainer.appendChild(highPositivesDiv);
 
-            // Low Positives List
             const lowPositivesDiv = document.createElement('div');
-            lowPositivesDiv.className = 'flex flex-col';
-            const lowPositivesTitle = document.createElement('h2');
-            lowPositivesTitle.className = 'text-xl font-bold text-gray-700 mb-4 text-center';
-            lowPositivesTitle.textContent = languageData[currentLang].negativeItemsTitle; // Use new title
-            lowPositivesDiv.appendChild(lowPositivesTitle);
-            const lowPositivesParagraph = document.createElement('p');
-            lowPositivesParagraph.className = 'text-gray-700 text-center';
-            if (lowPositives.length > 0) {
-                lowPositivesParagraph.textContent = lowPositives.map(item => item.item).join(' & '); // Join with &
-            } else {
-                lowPositivesParagraph.textContent = 'No items in this category.';
-            }
-            lowPositivesDiv.appendChild(lowPositivesParagraph);
-            listSection.appendChild(lowPositivesDiv);
-
-            positiveNegativeItemsContainer.appendChild(listSection);
+            lowPositivesDiv.classList.add('my-8', 'p-6', 'bg-red-50', 'rounded-lg', 'shadow');
+            lowPositivesDiv.innerHTML = `
+                <h3 class="text-xl font-bold text-red-700 mb-4">${languageData[currentLang].negativeItemsTitle} (< ${positivesThreshold}%)</h3>
+                ${lowPositives.length > 0 ?
+                    `<ul class="list-disc list-inside space-y-2 text-red-800">
+                        ${lowPositives.map(item => `<li>${item.item}</li>`).join('')}
+                    </ul>` :
+                    `<p class="text-red-800">No items meet this threshold.</p>`
+                }
+            `;
+            positiveNegativeItemsContainer.appendChild(lowPositivesDiv);
         }
 
-        // Custom plugin to draw labels within bars and hide Y-axis grid lines
-        const customBarLabelPlugin = {
-            id: 'customBarLabels',
-            afterDatasetsDraw(chart, args, options) {
-                const { ctx } = chart;
-
-                ctx.save();
-                ctx.font = 'bold 12px Inter'; // Already bold
-                ctx.fillStyle = '#000000'; // Set to black for labels inside bars
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle'; // Align text to the middle of the bar
-
-                chart.data.datasets.forEach((dataset, i) => {
-                    const meta = chart.getDatasetMeta(i);
-                    if (!meta.hidden) {
-                        meta.data.forEach((element, index) => {
-                            const dataValue = dataset.data[index];
-                            // Position label in the middle of the bar
-                            const xPos = element.x;
-                            const yPos = element.y + (element.height / 2); // Center vertically within the bar
-                            ctx.fillText(`${dataValue}%`, xPos, yPos);
-                        });
-                    }
-                });
-                ctx.restore();
-            },
-            // Hook to modify scales before rendering to hide y-axis
-            beforeLayout: (chart) => {
-                const yScale = chart.options.scales.y;
-                if (yScale) {
-                    yScale.display = false; // Hide the Y-axis
-                    // Also hide grid lines for the Y-axis
-                    if (yScale.grid) {
-                        yScale.grid.display = false;
-                    }
-                }
-            }
-        };
-        Chart.register(customBarLabelPlugin);
-
-
-        // Function to render a chart (now accepts labels array and datasets array)
-        function renderChart(labelsArray, datasetsArray, canvasId, title, isStacked = false, containerId = 'chartContainer') {
-            const chartSection = document.createElement('div');
-            chartSection.className = 'p-6 bg-gray-50 rounded-xl shadow-inner flex flex-col justify-center items-center';
-            // Add a thin line border to the chart section
-            chartSection.style.border = '1px solid #d1d5db'; // Tailwind gray-300
-
-            const chartTitleElem = document.createElement('h3');
-            chartTitleElem.className = 'text-lg font-bold mb-4 text-black'; // Changed to text-black
-            chartTitleElem.textContent = title;
-            chartSection.appendChild(chartTitleElem);
-
-            const canvasWrapper = document.createElement('div');
-            canvasWrapper.className = 'h-64 w-full';
-            const canvas = document.createElement('canvas');
-            canvas.id = canvasId;
-            canvasWrapper.appendChild(canvas);
-            chartSection.appendChild(canvasWrapper);
-
-            document.getElementById(containerId).appendChild(chartSection);
-
+        // Function to create and render a Chart.js chart
+        function renderChart(labels, datasets, canvasId, title) {
+            const chartDiv = document.createElement('div');
+            chartDiv.classList.add('p-6', 'bg-gray-50', 'rounded-xl', 'shadow-inner', 'flex', 'flex-col', 'justify-center', 'items-center');
+            chartDiv.innerHTML = `
+                <h3 class="text-lg font-semibold mb-4 text-gray-700">${title}</h3>
+                <div class="h-64 w-full">
+                    <canvas id="${canvasId}"></canvas>
+                </div>
+            `;
+            chartContainer.appendChild(chartDiv);
             const ctx = document.getElementById(canvasId).getContext('2d');
+            if (!ctx) {
+                console.error(`ERROR: Could not get 2D context for canvas ID: ${canvasId}. Canvas element might not be in DOM or ID is incorrect.`);
+                return; // Crucial: Stop execution if context is not available
+            }
             const newChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: labelsArray,
-                    datasets: datasetsArray.map(dataset => {
-                        // Ensure data is parsed to float and percentages are calculated if not already
-                        const dataForChart = dataset.data.map(val => {
-                            if (typeof val === 'number') return val;
-                            // Assuming it might be frequency here, recalculate if needed.
-                            // For simplicity, now expects percentages in datasetsArray for this new renderChart
-                            return parseFloat(val);
-                        });
-                        return {
-                            ...dataset,
-                            data: dataForChart
-                        };
-                    })
+                    labels: labels,
+                    datasets: datasets
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    layout: {
-                        padding: {
-                            // Removed top padding as labels are now inside bars
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        datalabels: { // Data labels plugin configuration
+                            anchor: 'center', // Changed to center
+                            align: 'center',   // Changed to center
+                            color: 'black',
+                            font: {
+                                weight: 'bold'
+                            },
+                            formatter: (value) => value + '%' // Format as percentage
                         }
                     },
                     scales: {
                         y: {
-                            beginAtZero: true,
-                            stacked: isStacked, // Apply stacking if true
-                            ticks: {
-                                font: {
-                                    weight: 'bold', // Y-axis labels bold
-                                    color: '#000000' // Y-axis labels black
-                                }
-                            }
+                            display: false, // Hide y-axis
                         },
                         x: {
-                            grid: {
-                                display: false
-                            },
-                            stacked: isStacked, // Apply stacking if true
-                            ticks: {
-                                font: {
-                                    weight: 'bold', // X-axis labels bold
-                                    color: '#000000' // X-axis labels black
-                                }
+                            title: {
+                                display: false // Hide x-axis title for these charts
                             }
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            titleFont: {
-                                weight: 'bold', // Tooltip title bold
-                                color: '#000000' // Tooltip title black
-                            },
-                            bodyFont: {
-                                weight: 'bold', // Tooltip body bold
-                                color: '#000000' // Tooltip body black
-                            },
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    if (context.parsed.y !== null) {
-                                        label += context.parsed.y + '%';
-                                    }
-                                    return label;
-                                }
-                            }
-                        },
-                        legend: {
-                            display: isStacked, // Display legend for stacked charts to show what each segment represents
-                            labels: {
-                                font: {
-                                    weight: 'bold', // Legend labels bold
-                                    color: '#000000' // Legend labels black
-                                }
-                            }
-                        },
-                        customBarLabels: { // Make sure plugin options are passed here
-                            // No custom options needed for this, but structure is here
                         }
                     }
-                },
-                plugins: [customBarLabelPlugin]
+                }
             });
-            allCharts[canvasId] = newChart; // Store the chart instance
+            allCharts[canvasId] = newChart;
         }
 
-        // Function to destroy all existing chart instances
+        // Function to render a single chart for overall domain averages
+        function renderOverallDomainAveragesChart(domainAverages) {
+            // Calculate overall average frequencies for each scale option
+            const overallAvgFrequencies = {};
+            currentScaleOptions.forEach(option => overallAvgFrequencies[option] = 0);
+            let totalResponsesAcrossAllDomains = 0;
+
+            domainAverages.forEach(domain => {
+                for (const option in domain.frequencies) {
+                    if (overallAvgFrequencies.hasOwnProperty(option)) {
+                        overallAvgFrequencies[option] += domain.frequencies[option];
+                    }
+                }
+                totalResponsesAcrossAllDomains += domain.totalResponses;
+            });
+
+            const overallChartLabels = [];
+            const overallChartPercentages = [];
+
+            // Add percentages for each response option
+            currentScaleOptions.forEach(option => {
+                const count = overallAvgFrequencies[option] || 0;
+                const percentage = totalResponsesAcrossAllDomains > 0 ? ((count / totalResponsesAcrossAllDomains) * 100).toFixed(2) : 0;
+                overallChartLabels.push(option);
+                overallChartPercentages.push(percentage);
+            });
+
+            // Calculate overall positive percentage
+            let overallTotalPositiveResponses = 0;
+            domainAverages.forEach(domain => {
+                overallTotalPositiveResponses += Array.from(positiveScaleOptions).reduce((sum, pOption) => sum + (domain.frequencies[pOption] || 0), 0);
+            });
+            const overallPositivesPercentage = totalResponsesAcrossAllDomains > 0 ? ((overallTotalPositiveResponses / totalResponsesAcrossAllDomains) * 100).toFixed(2) : 0;
+
+            overallChartLabels.push(languageData[currentLang].positiveLabel); // Add "Positive" label
+            overallChartPercentages.push(overallPositivesPercentage);
+
+
+            const datasets = [{
+                label: 'Overall Percentage',
+                data: overallChartPercentages,
+                backgroundColor: responseColors.slice(0, overallChartLabels.length), // Re-use colors, might need more for 'Positive'
+                borderColor: responseColors.slice(0, overallChartLabels.length).map(color => color.replace('rgb', 'rgba').replace(')', ', 1)')),
+                borderWidth: 1
+            }];
+
+            const chartDiv = document.createElement('div');
+            chartDiv.classList.add('p-6', 'bg-gray-50', 'rounded-xl', 'shadow-inner', 'flex', 'flex-col', 'justify-center', 'items-center', 'col-span-1', 'md:col-span-2', 'lg:col-span-3');
+            chartDiv.innerHTML = `
+                <h3 class="text-lg font-semibold mb-4 text-gray-700">${languageData[currentLang].domainAveragesChartTitle}</h3>
+                <div class="h-96 w-full">
+                    <canvas id="overallDomainAveragesChart"></canvas>
+                </div>
+            `;
+            chartContainer.appendChild(chartDiv);
+            
+            const ctx = document.getElementById('overallDomainAveragesChart').getContext('2d');
+            if (!ctx) {
+                console.error(`ERROR: Could not get 2D context for canvas ID: overallDomainAveragesChart. Canvas element might not be in DOM or ID is incorrect.`);
+                return; // Crucial: Stop execution if context is not available
+            }
+            const newChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: overallChartLabels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false // Hide legend as there's only one dataset 'Overall Percentage'
+                        },
+                        datalabels: { // Data labels plugin configuration
+                            anchor: 'center', // Changed to center
+                            align: 'center',   // Changed to center
+                            color: 'black',
+                            font: {
+                                weight: 'bold'
+                            },
+                            formatter: (value) => value + '%' // Format as percentage
+                        }
+                    },
+                    scales: {
+                        y: {
+                            display: false, // Hide y-axis
+                        },
+                        x: {
+                            title: {
+                                display: false // Hide x-axis title
+                            }
+                        }
+                    }
+                }
+            });
+            allCharts['overallDomainAveragesChart'] = newChart;
+        }
+
+        // Function to destroy all active chart instances
         function destroyAllCharts() {
             for (const chartId in allCharts) {
                 if (allCharts[chartId]) {
                     allCharts[chartId].destroy();
                 }
             }
-            allCharts = {}; // Reset the storage
+            allCharts = {}; // Reset the object
         }
 
-
-        // Helper function to calculate mean
+        // Function to calculate the mean of a set of responses
         function calculateMean(responses) {
-            if (responses.length === 0) return 0;
-            const validResponses = responses.map(response => currentResponseValueMap[String(response).trim()]).filter(value => value !== undefined);
-            if (validResponses.length === 0) return 0;
-            const sum = validResponses.reduce((acc, val) => acc + val, 0);
-            return sum / validResponses.length;
-        }
+            if (!responses || responses.length === 0) return 0;
 
-        // Helper function to calculate standard deviation - removed from display, but kept if needed for other calcs
-        function calculateStandardDeviation(responses, mean) {
-            if (responses.length === 0) return 0;
-            const validResponses = responses.map(response => currentResponseValueMap[String(response).trim()]).filter(value => value !== undefined);
-            if (validResponses.length < 2) return 0; // Need at least two data points for SD
-            const sumOfSquares = validResponses.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0);
-            return Math.sqrt(sumOfSquares / (validResponses.length - 1));
-        }
-
-        // Function to update UI elements based on current language
-        function updateUIForLanguage() {
-            document.getElementById('mainTitle').textContent = languageData[currentLang].title;
-            document.getElementById('subtitle').textContent = languageData[currentLang].subtitle;
-            document.getElementById('fileButtonText').textContent = languageData[currentLang].fileButton;
-            document.getElementById('loadingMessage').textContent = languageData[currentLang].loading;
-            document.getElementById('exportButton').textContent = languageData[currentLang].exportButton;
-            document.getElementById('copyTableButton').textContent = languageData[currentLang].copyTableButton;
-            document.getElementById('analyzeButton').textContent = languageData[currentLang].analyzeButton;
-            document.getElementById('domainTitle').textContent = languageData[currentLang].domainTitle;
-            document.getElementById('domainSubtitle').textContent = languageData[currentLang].domainSubtitle;
-            document.getElementById('dataOrientationLabel').textContent = languageData[currentLang].dataOrientationLabel;
-            orientationVerticalSpan.textContent = languageData[currentLang].orientationVertical;
-            orientationHorizontalSpan.textContent = languageData[currentLang].orientationHorizontal;
-            document.getElementById('scaleOrderTitle').textContent = languageData[currentLang].scaleOrderTitle;
-            document.getElementById('scaleOrderSubtitle').textContent = languageData[currentLang].scaleOrderSubtitle;
-            trimItemsLabel.textContent = languageData[currentLang].trimItemsLabel;
-            positiveThresholdLabel.textContent = languageData[currentLang].positiveThresholdLabel; // Update label
-
-            // Update template guide texts
-            templateGuideTitle.textContent = languageData[currentLang].templateGuide.title;
-            verticalTemplateContent.querySelector('p').textContent = languageData[currentLang].templateGuide.verticalDesc;
-            horizontalTemplateContent.querySelector('p').textContent = languageData[currentLang].templateGuide.horizontalDesc;
-            document.getElementById('vtHeaderItem').textContent = languageData[currentLang].templateGuide.vtHeaderItem;
-            document.getElementById('vtHeaderResp1').textContent = languageData[currentLang].templateGuide.vtHeaderResp + ' 1';
-            document.getElementById('vtHeaderResp2').textContent = languageData[currentLang].templateGuide.vtHeaderResp + ' 2';
-            document.getElementById('htHeaderEmpty').textContent = languageData[currentLang].templateGuide.htHeaderEmpty;
-            document.getElementById('htHeaderItem1').textContent = languageData[currentLang].templateGuide.htHeaderItem + ' 1'; // Add 1
-            document.getElementById('htHeaderItem2').textContent = languageData[currentLang].templateGuide.htHeaderItem + ' 2'; // Add 2
-            document.getElementById('htRow1Resp').textContent = languageData[currentLang].templateGuide.htRowResp + ' 1'; // Add 1
-        }
-
-        // Function to manage language toggle styles
-        function updateLanguageToggleStyles() {
-            if (currentLang === 'en') {
-                langEnSpan.classList.add('bg-indigo-600', 'text-white');
-                langEnSpan.classList.remove('bg-gray-200', 'text-gray-800');
-                langArSpan.classList.add('bg-gray-200', 'text-gray-800');
-                langArSpan.classList.remove('bg-indigo-600', 'text-white');
-                document.documentElement.setAttribute('dir', 'ltr'); // Set direction to LTR
-            } else {
-                langArSpan.classList.add('bg-indigo-600', 'text-white');
-                langArSpan.classList.remove('bg-gray-200', 'text-gray-800');
-                langEnSpan.classList.add('bg-gray-200', 'text-gray-800');
-                langEnSpan.classList.remove('bg-indigo-600', 'text-white');
-                document.documentElement.setAttribute('dir', 'rtl'); // Set direction to RTL
-            }
-        }
-
-        // Language toggle event listener
-        langToggle.addEventListener('click', () => {
-            currentLang = currentLang === 'en' ? 'ar' : 'en';
-            updateUIForLanguage();
-            updateLanguageToggleStyles();
-            // Re-render sections that depend on language
-            const storedParsedData = JSON.parse(sessionStorage.getItem('parsedData'));
-            if (storedParsedData) {
-                renderScaleOptions(); // Re-render scale options for new language
-                const domainSizesInput = domainInput.value.trim();
-                const domainSizes = domainSizesInput.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n > 0);
-                const totalItemsInFile = dataOrientation === 'vertical' ? storedParsedData.slice(1).length : storedParsedData[0].slice(1).length;
-                const totalRespondents = dataOrientation === 'vertical' ? (storedParsedData[0].length > 1 ? storedParsedData[0].slice(1).length : 0) : storedParsedData.slice(1).length;
-                if (totalItemsDisplay) totalItemsDisplay.textContent = languageData[currentLang].totalItemsDisplay.replace('{total}', totalItemsInFile);
-                if (participantCountDisplay) participantCountDisplay.textContent = languageData[currentLang].participantCount.replace('{count}', totalRespondents);
-
-                if (resultsContainer.childElementCount > 0) { // Check if results were already displayed
-                    if (domainSizes.length > 0) {
-                        displayDomainResults(storedParsedData, domainSizes);
-                    } else {
-                        displayFullResults(storedParsedData);
-                    }
+            let sum = 0;
+            let validResponsesCount = 0;
+            responses.forEach(response => {
+                const trimmedResponse = String(response).trim();
+                const value = currentResponseValueMap[trimmedResponse];
+                if (value !== undefined) {
+                    sum += value;
+                    validResponsesCount++;
                 }
+            });
+            return validResponsesCount > 0 ? (sum / validResponsesCount) : 0;
+        }
+        
+        // Event listener for data orientation toggle
+        dataOrientationToggle.addEventListener('click', (e) => {
+            if (e.target.id === 'orientation-vertical') {
+                dataOrientation = 'vertical';
+            } else if (e.target.id === 'orientation-horizontal') {
+                dataOrientation = 'horizontal';
             }
+            updateOrientationButtonStyles();
         });
 
-        // Function to manage data orientation toggle styles
-        function updateDataOrientationToggleStyles() {
+        function updateOrientationButtonStyles() {
             if (dataOrientation === 'vertical') {
                 orientationVerticalSpan.classList.add('bg-indigo-600', 'text-white');
-                orientationVerticalSpan.classList.remove('bg-gray-200', 'text-gray-800');
-                orientationHorizontalSpan.classList.add('bg-gray-200', 'text-gray-800');
+                orientationVerticalSpan.classList.remove('bg-gray-100', 'text-gray-800');
                 orientationHorizontalSpan.classList.remove('bg-indigo-600', 'text-white');
+                orientationHorizontalSpan.classList.add('bg-gray-100', 'text-gray-800');
             } else {
                 orientationHorizontalSpan.classList.add('bg-indigo-600', 'text-white');
-                orientationHorizontalSpan.classList.remove('bg-gray-200', 'text-gray-800');
-                orientationVerticalSpan.classList.add('bg-gray-200', 'text-gray-800');
+                orientationHorizontalSpan.classList.remove('bg-gray-100', 'text-gray-800');
                 orientationVerticalSpan.classList.remove('bg-indigo-600', 'text-white');
+                orientationVerticalSpan.classList.add('bg-gray-100', 'text-gray-800');
             }
-            // The fileUploadSection is now always visible by default from HTML
         }
+        updateOrientationButtonStyles();
 
-        // Data orientation toggle event listener
-        dataOrientationToggle.addEventListener('click', () => {
-            dataOrientation = dataOrientation === 'vertical' ? 'horizontal' : 'vertical';
-            updateDataOrientationToggleStyles();
-            // Clear previous results when orientation changes
-            sessionStorage.removeItem('parsedData');
-            resultsContainer.classList.add('hidden');
-            chartContainer.classList.add('hidden');
-            actionButtons.classList.add('hidden');
-            domainSection.classList.add('hidden');
-            scaleOrderSection.classList.add('hidden'); // Hide scale order until new file
-            messageBox.classList.add('hidden');
-            domainMessageBox.classList.add('hidden');
-            scaleOrderMessageBox.classList.add('hidden');
-            positiveNegativeItemsContainer.classList.add('hidden'); // Hide positive/negative items container
-            xlsxFile.value = ''; // Clear the selected file
-            totalItemsDisplay.textContent = ''; // Clear total items display
-            participantCountDisplay.textContent = ''; // Clear participant count
+        // Event listener for language toggle
+        langToggle.addEventListener('click', (e) => {
+            if (e.target.id === 'lang-en') {
+                currentLang = 'en';
+                document.documentElement.lang = 'en';
+                document.documentElement.dir = 'ltr';
+            } else if (e.target.id === 'lang-ar') {
+                currentLang = 'ar';
+                document.documentElement.lang = 'ar';
+                document.documentElement.dir = 'rtl';
+            }
+            updateLanguageUI();
         });
 
+        // Function to update all UI text based on the current language
+        function updateLanguageUI() {
+            const data = languageData[currentLang];
+            document.getElementById('mainTitle').textContent = data.title;
+            document.getElementById('subtitle').textContent = data.subtitle;
+            document.getElementById('fileButtonText').textContent = data.fileButton;
+            document.getElementById('loadingMessage').textContent = data.loading;
+            document.getElementById('analyzeButton').textContent = data.analyzeButton;
+            document.getElementById('exportButton').textContent = data.exportButton;
+            document.getElementById('copyTableButton').textContent = data.copyTableButton;
+            document.getElementById('dataOrientationLabel').textContent = data.dataOrientationLabel;
+            document.getElementById('orientation-vertical').textContent = data.orientationVertical;
+            document.getElementById('orientation-horizontal').textContent = data.orientationHorizontal;
+            document.getElementById('scaleOrderTitle').textContent = data.scaleOrderTitle;
+            document.getElementById('scaleOrderSubtitle').textContent = data.scaleOrderSubtitle;
+            document.getElementById('showVerticalTemplateBtn').textContent = data.templateButtons.vertical;
+            document.getElementById('showHorizontalTemplateBtn').textContent = data.templateButtons.horizontal;
+            document.getElementById('templateGuideTitle').textContent = data.templateGuide.title;
+            document.getElementById('verticalTemplateDescription').textContent = data.templateGuide.verticalDesc;
+            document.getElementById('horizontalTemplateDescription').textContent = data.templateGuide.horizontalDesc;
+            document.getElementById('vtHeaderItem').textContent = data.templateGuide.vtHeaderItem;
+            document.getElementById('vtHeaderResp1').textContent = data.templateGuide.vtHeaderResp;
+            document.getElementById('vtHeaderResp2').textContent = data.templateGuide.vtHeaderResp;
+            document.getElementById('htHeaderEmpty').textContent = data.templateGuide.htHeaderEmpty;
+            document.getElementById('htHeaderItem1').textContent = data.templateGuide.htHeaderItem;
+            document.getElementById('htHeaderItem2').textContent = data.templateGuide.htHeaderItem;
+            document.getElementById('htRow1Resp').textContent = data.templateGuide.htRowResp;
 
-        // Function to render scale options (ranking widget)
+            updateLangButtonStyles();
+            renderScaleOptions(); // Re-render to update positive labels
+        }
+
+        function updateLangButtonStyles() {
+            if (currentLang === 'en') {
+                langEnSpan.classList.add('bg-indigo-600', 'text-white');
+                langEnSpan.classList.remove('bg-gray-100', 'text-gray-800');
+                langArSpan.classList.remove('bg-indigo-600', 'text-white');
+                langArSpan.classList.add('bg-gray-100', 'text-gray-800');
+            } else {
+                langArSpan.classList.add('bg-indigo-600', 'text-white');
+                langArSpan.classList.remove('bg-gray-100', 'text-gray-800');
+                langEnSpan.classList.remove('bg-indigo-600', 'text-white');
+                langEnSpan.classList.add('bg-gray-100', 'text-gray-800');
+            }
+        }
+
+        // Function to render the scale order options
         function renderScaleOptions() {
-            scaleOrderOptionsContainer.innerHTML = ''; // Clear existing options
-            scaleOrderMessageBox.classList.add('hidden'); // Hide any previous messages
-
+            scaleOrderOptionsContainer.innerHTML = '';
             currentScaleOptions.forEach((option, index) => {
+                const isPositive = positiveScaleOptions.has(option);
                 const optionDiv = document.createElement('div');
-                optionDiv.className = 'ranking-option';
+                optionDiv.classList.add('ranking-option');
                 optionDiv.draggable = true;
                 optionDiv.dataset.option = option;
-                
-                // Determine if the option is currently marked as positive
-                const isPositive = positiveScaleOptions.has(option);
-
                 optionDiv.innerHTML = `
                     <span class="ranking-option-text">${option}</span>
                     <div class="ranking-option-buttons">
@@ -1658,347 +1256,260 @@
                             <div class="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
                             <span class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">${languageData[currentLang].positiveLabel}</span>
                         </label>
-                        <button class="move-button move-up" data-direction="up">↑</button>
-                        <button class="move-button move-down" data-direction="down">↓</button>
-                        <button class="remove-button">&times;</button>
+                        <button class="remove-button" data-action="remove">&times;</button>
+                        <button class="move-button" data-action="up">&#x25B2;</button>
+                        <button class="move-button" data-action="down">&#x25BC;</button>
                     </div>
                 `;
                 scaleOrderOptionsContainer.appendChild(optionDiv);
             });
-            attachDragDropListeners();
         }
 
-        function updateScaleOptionsOrder() {
-            const newOrder = [];
-            Array.from(scaleOrderOptionsContainer.children).forEach(optionDiv => {
-                newOrder.push(optionDiv.dataset.option);
-            });
+        // Event listeners for the Ranking Widget
+        scaleOrderOptionsContainer.addEventListener('click', (e) => {
+            const button = e.target.closest('button');
+            const checkbox = e.target.closest('.positive-checkbox');
+
+            if (checkbox) {
+                const optionText = checkbox.dataset.option;
+                if (checkbox.checked) {
+                    positiveScaleOptions.add(optionText);
+                } else {
+                    positiveScaleOptions.delete(optionText);
+                }
+            } else if (button) {
+                const optionDiv = button.closest('.ranking-option');
+                const option = optionDiv.dataset.option;
+                const action = button.dataset.action;
+                const index = currentScaleOptions.indexOf(option);
+
+                if (action === 'remove') {
+                    currentScaleOptions.splice(index, 1);
+                    positiveScaleOptions.delete(option); // Also remove from positive set
+                } else if (action === 'up' && index > 0) {
+                    [currentScaleOptions[index], currentScaleOptions[index - 1]] = [currentScaleOptions[index - 1], currentScaleOptions[index]];
+                } else if (action === 'down' && index < currentScaleOptions.length - 1) {
+                    [currentScaleOptions[index], currentScaleOptions[index + 1]] = [currentScaleOptions[index + 1], currentScaleOptions[index]];
+                }
+                renderScaleOptions(); // Re-render the list to reflect changes
+            }
+        });
+
+        // Drag and drop for ranking options
+        let draggedOption = null;
+        scaleOrderOptionsContainer.addEventListener('dragstart', (e) => {
+            draggedOption = e.target;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', e.target.dataset.option);
+            setTimeout(() => {
+                draggedOption.classList.add('opacity-50');
+            }, 0);
+        });
+        scaleOrderOptionsContainer.addEventListener('dragend', (e) => {
+            draggedOption.classList.remove('opacity-50');
+            draggedOption = null;
+        });
+        scaleOrderOptionsContainer.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const target = e.target.closest('.ranking-option');
+            if (target && target !== draggedOption) {
+                const targetRect = target.getBoundingClientRect();
+                const draggedRect = draggedOption.getBoundingClientRect();
+                if (e.clientY < targetRect.top + targetRect.height / 2) {
+                    scaleOrderOptionsContainer.insertBefore(draggedOption, target);
+                } else {
+                    scaleOrderOptionsContainer.insertBefore(draggedOption, target.nextSibling);
+                }
+            }
+        });
+        scaleOrderOptionsContainer.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const droppedOption = e.dataTransfer.getData('text/plain');
+            const newOrder = Array.from(scaleOrderOptionsContainer.children).map(child => child.dataset.option);
             currentScaleOptions = newOrder;
-            // Update the currentResponseValueMap based on the new order
-            currentScaleOptions.forEach((option, index) => {
-                currentResponseValueMap[option] = currentScaleOptions.length - index;
-            });
-        }
+        });
 
-        // Drag and Drop functionality
-        let draggedItem = null;
 
-        function attachDragDropListeners() {
-            const options = scaleOrderOptionsContainer.querySelectorAll('.ranking-option');
-            options.forEach(option => {
-                option.addEventListener('dragstart', (e) => {
-                    draggedItem = option;
-                    setTimeout(() => option.classList.add('opacity-50'), 0);
-                    e.dataTransfer.effectAllowed = 'move';
-                });
-
-                option.addEventListener('dragend', () => {
-                    draggedItem.classList.remove('opacity-50');
-                    draggedItem = null;
-                });
-
-                option.addEventListener('dragover', (e) => {
-                    e.preventDefault(); // Allow drop
-                    const bounding = option.getBoundingClientRect();
-                    const offset = bounding.y + (bounding.height / 2);
-                    if (draggedItem && draggedItem !== option) {
-                        if (e.clientY < offset) {
-                            option.classList.remove('border-b-2', 'border-indigo-500');
-                            option.classList.add('border-t-2', 'border-indigo-500');
-                        } else {
-                            option.classList.remove('border-t-2', 'border-indigo-500');
-                            option.classList.add('border-b-2', 'border-indigo-500');
-                        }
-                    }
-                });
-
-                option.addEventListener('dragleave', (e) => {
-                    option.classList.remove('border-t-2', 'border-indigo-500', 'border-b-2', 'border-indigo-500');
-                });
-
-                option.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    if (draggedItem && draggedItem !== option) {
-                        const bounding = option.getBoundingClientRect();
-                        const offset = bounding.y + (bounding.height / 2);
-
-                        if (e.clientY < offset) {
-                            scaleOrderOptionsContainer.insertBefore(draggedItem, option);
-                        } else {
-                            scaleOrderOptionsContainer.insertBefore(draggedItem, option.nextSibling);
-                        }
-                        updateScaleOptionsOrder();
-                    }
-                    option.classList.remove('border-t-2', 'border-indigo-500', 'border-b-2', 'border-indigo-500');
-                });
-            });
-
-            // Event delegation for move and remove buttons and positive checkbox
-            scaleOrderOptionsContainer.addEventListener('click', (e) => {
-                if (e.target.classList.contains('move-up')) {
-                    const optionDiv = e.target.closest('.ranking-option');
-                    if (optionDiv && optionDiv.previousElementSibling) {
-                        scaleOrderOptionsContainer.insertBefore(optionDiv, optionDiv.previousElementSibling);
-                        updateScaleOptionsOrder();
-                    }
-                } else if (e.target.classList.contains('move-down')) {
-                    const optionDiv = e.target.closest('.ranking-option');
-                    if (optionDiv && optionDiv.nextElementSibling) {
-                        scaleOrderOptionsContainer.insertBefore(optionDiv.nextElementSibling, optionDiv);
-                        updateScaleOptionsOrder();
-                    }
-                } else if (e.target.classList.contains('remove-button')) {
-                    const optionDiv = e.target.closest('.ranking-option');
-                    if (optionDiv) {
-                        const optionText = optionDiv.dataset.option;
-                        positiveScaleOptions.delete(optionText); // Remove from positive set if present
-                        optionDiv.remove();
-                        updateScaleOptionsOrder();
-                    }
-                } else if (e.target.classList.contains('positive-checkbox')) {
-                    const checkbox = e.target;
-                    const optionText = checkbox.dataset.option;
-                    if (checkbox.checked) {
-                        positiveScaleOptions.add(optionText);
-                    } else {
-                        positiveScaleOptions.delete(optionText);
-                    }
-                }
-            });
-        }
-
-        // Export to XLSX functionality
+        // Event listener for Export to XLSX button
         exportButton.addEventListener('click', () => {
-            const wb = XLSX.utils.book_new();
-            let ws_data_combined = [];
-            let currentOffset = 0; // Keep track of rows added to the combined data
-
-            // Helper to get table data for export
-            const getTableExportData = (tableElement, titleText) => {
-                const tableData = [];
-                if (titleText) {
-                    tableData.push([titleText]); // Add title
-                    tableData.push([]); // Empty row for spacing
-                }
-                // Get headers
-                const headers = Array.from(tableElement.querySelectorAll('thead th')).map(th => th.textContent.trim());
-                tableData.push(headers);
-                // Get tbody rows
-                tableElement.querySelectorAll('tbody tr').forEach(row => {
-                    const rowData = Array.from(row.querySelectorAll('td')).map(td => td.textContent.trim());
-                    tableData.push(rowData);
-                });
-                // Get tfoot row
-                const footerRow = tableElement.querySelector('tfoot tr');
-                if (footerRow) {
-                    const footerRowData = Array.from(footerRow.querySelectorAll('td')).map(td => td.textContent.trim());
-                    // Adjust footerRowData to align with headers for colspan
-                    const adjustedFooterRowData = new Array(headers.length).fill(''); // Fill with empty strings
-                    let colIndex = 0;
-                    for (let i = 0; i < footerRowData.length; i++) {
-                        const td = footerRow.children[i];
-                        const colspan = parseInt(td.getAttribute('colspan') || '1');
-                        adjustedFooterRowData[colIndex] = footerRowData[i];
-                        colIndex += colspan;
-                    }
-                    tableData.push(adjustedFooterRowData);
-                }
-                return tableData;
-            };
-
-            // Main Results Table
-            const mainTable = resultsContainer.querySelector('table#full');
-            if (mainTable) {
-                const mainTableTitle = languageData[currentLang].title;
-                const data = getTableExportData(mainTable, mainTableTitle);
-                ws_data_combined = ws_data_combined.concat(data);
-                ws_data_combined.push([], []); // Add empty rows for spacing
+            const allTables = document.querySelectorAll('#resultsContainer .table-container table');
+            if (allTables.length === 0) {
+                showMessage('No data to export.', 'error');
+                return;
             }
 
-            // Domain Tables
-            document.querySelectorAll('#resultsContainer table[id^="domain-"]').forEach(table => {
-                const titleElem = table.closest('div').querySelector('h2');
-                const domainTableTitle = titleElem ? titleElem.textContent.trim() : '';
-                const data = getTableExportData(table, domainTableTitle);
-                ws_data_combined = ws_data_combined.concat(data);
-                ws_data_combined.push([], []); // Add empty rows for spacing
+            const workbook = XLSX.utils.book_new();
+            const sheetData = [];
+
+            allTables.forEach(table => {
+                const titleElement = table.closest('.table-container').querySelector('h2');
+                const tableTitle = titleElement ? titleElement.textContent.trim() : 'Table';
+                
+                // Add table title as a row
+                sheetData.push([tableTitle]);
+                sheetData.push([]); // Empty row for spacing
+
+                // Get table headers
+                const headerRow = [];
+                Array.from(table.querySelectorAll('thead th')).forEach(th => {
+                    headerRow.push(th.textContent.replace(' (%)', '')); // Remove (%) from headers for export
+                });
+                sheetData.push(headerRow);
+
+                // Get table body rows
+                Array.from(table.querySelectorAll('tbody tr')).forEach(tr => {
+                    const rowData = [];
+                    Array.from(tr.querySelectorAll('td')).forEach(td => {
+                        rowData.push(td.textContent);
+                    });
+                    sheetData.push(rowData);
+                });
+
+                // Get table footer row (if exists)
+                const tfoot = table.querySelector('tfoot');
+                if (tfoot) {
+                    Array.from(tfoot.querySelectorAll('tr')).forEach(tr => {
+                        const footerRowData = [];
+                        Array.from(tr.querySelectorAll('td')).forEach(td => {
+                            footerRowData.push(td.textContent.replace(' (%)', '')); // Remove (%) from headers for export
+                        });
+                        sheetData.push(footerRowData);
+                    });
+                }
+                sheetData.push([]); // Empty row for spacing between tables
+                sheetData.push([]); // Another empty row for more spacing
             });
 
-            // Add Positive and Negative Items sections to export
-            const positiveItemsPara = document.querySelector('#positiveNegativeItemsContainer p:nth-of-type(1)');
-            const negativeItemsPara = document.querySelector('#positiveNegativeItemsContainer p:nth-of-type(2)');
+            // Add the positive and negative items to the export
+            const positiveItemsList = document.querySelector('#positiveNegativeItemsContainer ul:first-of-type');
+            const negativeItemsList = document.querySelector('#positiveNegativeItemsContainer ul:last-of-type');
 
-            if (positiveItemsPara) {
-                ws_data_combined.push([languageData[currentLang].positiveItemsTitle]);
-                ws_data_combined.push([positiveItemsPara.textContent]);
-                ws_data_combined.push([]); // Empty row for spacing
-            }
-            if (negativeItemsPara) {
-                ws_data_combined.push([languageData[currentLang].negativeItemsTitle]);
-                ws_data_combined.push([negativeItemsPara.textContent]);
-                ws_data_combined.push([]); // Empty row for spacing
+            if (positiveItemsList || negativeItemsList) {
+                if (positiveItemsList) {
+                    sheetData.push([languageData[currentLang].positiveItemsTitle]);
+                    Array.from(positiveItemsList.children).forEach(li => sheetData.push([li.textContent]));
+                    sheetData.push([]); // Spacer
+                }
+                if (negativeItemsList) {
+                    sheetData.push([languageData[currentLang].negativeItemsTitle]);
+                    Array.from(negativeItemsList.children).forEach(li => sheetData.push([li.textContent]));
+                    sheetData.push([]); // Spacer
+                }
             }
 
-            // Domain Averages Table
-            const domainAveragesTable = document.getElementById('domainAveragesTable');
-            if (domainAveragesTable) {
-                const domainAveragesTitle = languageData[currentLang].domainAverages;
-                const data = getTableExportData(domainAveragesTable, domainAveragesTitle);
-                ws_data_combined = ws_data_combined.concat(data);
+            if (sheetData.length > 0) {
+                const ws = XLSX.utils.aoa_to_sheet(sheetData);
+                XLSX.utils.book_append_sheet(workbook, ws, 'Analysis Results');
             }
-            
-            const ws = XLSX.utils.aoa_to_sheet(ws_data_combined);
-            XLSX.utils.book_append_sheet(wb, ws, "Questionnaire Analysis");
 
-            XLSX.writeFile(wb, "Questionnaire_Analysis.xlsx");
+            // Write and save the file
+            XLSX.writeFile(workbook, 'questionnaire-analysis-results.xlsx');
         });
 
-        // Copy table to clipboard functionality
+
+        // Event listener for Copy All Tables button
         copyTableButton.addEventListener('click', () => {
-            let allTableText = '';
+            const allTables = document.querySelectorAll('#resultsContainer .table-container table');
+            let combinedText = '';
 
-            // Helper to get table text for clipboard
-            const getTableText = (tableElement, titleText) => {
-                let text = '';
-                if (titleText) {
-                    text += titleText + '\n\n';
-                }
-                // Headers
-                Array.from(tableElement.querySelectorAll('thead th')).forEach(th => {
-                    text += th.textContent.trim() + '\t';
+            allTables.forEach(table => {
+                const titleElement = table.closest('.table-container').querySelector('h2');
+                const tableTitle = titleElement ? titleElement.textContent.trim() : 'Table';
+                combinedText += tableTitle + '\n\n'; // Add title
+
+                // Get headers
+                Array.from(table.querySelectorAll('thead th')).forEach((th, index) => {
+                    combinedText += th.textContent.replace(' (%)', '') + (index < table.querySelectorAll('thead th').length - 1 ? '\t' : '');
                 });
-                text += '\n';
-                // Body rows
-                tableElement.querySelectorAll('tbody tr').forEach(row => {
-                    Array.from(row.children).forEach(cell => {
-                        text += cell.textContent.trim() + '\t';
+                combinedText += '\n';
+
+                // Get body rows
+                Array.from(table.querySelectorAll('tbody tr')).forEach(tr => {
+                    Array.from(tr.querySelectorAll('td')).forEach((td, index) => {
+                        combinedText += td.textContent + (index < tr.querySelectorAll('td').length - 1 ? '\t' : '');
                     });
-                    text += '\n';
+                    combinedText += '\n';
                 });
-                // Footer row
-                const footerRow = tableElement.querySelector('tfoot tr');
-                if (footerRow) {
-                    Array.from(footerRow.children).forEach(cell => {
-                        text += cell.textContent.trim() + '\t';
+
+                // Get footer row (if exists)
+                const tfoot = table.querySelector('tfoot');
+                if (tfoot) {
+                    Array.from(tfoot.querySelectorAll('tr')).forEach(tr => {
+                        Array.from(tr.querySelectorAll('td')).forEach((td, index) => {
+                            combinedText += td.textContent.replace(' (%)', '') + (index < tr.querySelectorAll('td').length - 1 ? '\t' : '');
+                        });
+                        combinedText += '\n';
                     });
-                    text += '\n';
                 }
-                return text;
-            };
-
-            // Main Results Table
-            const mainTable = resultsContainer.querySelector('table#full');
-            if (mainTable) {
-                allTableText += getTableText(mainTable, languageData[currentLang].title);
-                allTableText += '\n\n'; // Add spacing
-            }
-
-            // Domain Tables
-            document.querySelectorAll('#resultsContainer table[id^="domain-"]').forEach(table => {
-                const titleElem = table.closest('div').querySelector('h2');
-                const domainTableTitle = titleElem ? titleElem.textContent.trim() : '';
-                allTableText += getTableText(table, domainTableTitle);
-                allTableText += '\n\n'; // Add spacing
+                combinedText += '\n\n'; // Add spacing between tables
             });
 
-            // Add Positive and Negative Items sections to clipboard text
-            const positiveItemsPara = document.querySelector('#positiveNegativeItemsContainer p:nth-of-type(1)');
-            const negativeItemsPara = document.querySelector('#positiveNegativeItemsContainer p:nth-of-type(2)');
+            // Add positive and negative items
+            const positiveItemsList = document.querySelector('#positiveNegativeItemsContainer ul:first-of-type');
+            const negativeItemsList = document.querySelector('#positiveNegativeItemsContainer ul:last-of-type');
 
-            if (positiveItemsPara) {
-                allTableText += languageData[currentLang].positiveItemsTitle + '\n';
-                allTableText += positiveItemsPara.textContent + '\n\n';
+            if (positiveItemsList) {
+                combinedText += languageData[currentLang].positiveItemsTitle + '\n';
+                Array.from(positiveItemsList.children).forEach(li => combinedText += li.textContent + '\n');
+                combinedText += '\n';
             }
-            if (negativeItemsPara) {
-                allTableText += languageData[currentLang].negativeItemsTitle + '\n';
-                allTableText += negativeItemsPara.textContent + '\n\n';
-            }
-
-            // Domain Averages Table
-            const domainAveragesTable = document.getElementById('domainAveragesTable');
-            if (domainAveragesTable) {
-                allTableText += getTableText(domainAveragesTable, languageData[currentLang].domainAverages);
+            if (negativeItemsList) {
+                combinedText += languageData[currentLang].negativeItemsTitle + '\n';
+                Array.from(negativeItemsList.children).forEach(li => combinedText += li.textContent + '\n');
+                combinedText += '\n';
             }
 
-
-            document.execCommand('copy');
-            const el = document.createElement('textarea');
-            el.value = allTableText;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-
-            showMessage(languageData[currentLang].tableCopied, 'info');
-        });
-
-        // Toggle for item trimming
-        trimItemsToggle.addEventListener('change', () => {
-            enableItemTrimming = trimItemsToggle.checked;
-            // Re-analyze data if already displayed to apply trimming
-            const storedParsedData = JSON.parse(sessionStorage.getItem('parsedData'));
-            if (storedParsedData && resultsContainer.childElementCount > 0) {
-                const domainSizesInput = domainInput.value.trim();
-                const domainSizes = domainSizesInput.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n > 0);
-                if (domainSizes.length > 0) {
-                    displayDomainResults(storedParsedData, domainSizes);
+            // Use document.execCommand('copy') for copying as it's more reliable in iframes
+            const textArea = document.createElement("textarea");
+            textArea.value = combinedText;
+            textArea.style.position = "fixed"; // Avoid scrolling to bottom
+            textArea.style.left = "-999999px"; // Move off-screen
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showMessage(languageData[currentLang].tableCopied, 'info');
                 } else {
-                    displayFullResults(storedParsedData);
+                    showMessage('Failed to copy tables. Please try again or use the Export button.', 'error');
                 }
+            } catch (err) {
+                console.error('Failed to copy tables (execCommand):', err);
+                showMessage('Failed to copy tables. Please try again or use the Export button.', 'error');
+            } finally {
+                document.body.removeChild(textArea);
             }
         });
 
-        // Event listener for Positives Threshold input
-        positiveThresholdInput.addEventListener('input', () => {
-            let value = parseFloat(positiveThresholdInput.value);
-            if (isNaN(value) || value < 0) {
-                value = 0;
-            } else if (value > 100) {
-                value = 100;
-            }
-            positiveThresholdPercentage = value;
-            positiveThresholdInput.value = value; // Update the input field to reflect the corrected value
-
-            // Re-analyze data if already displayed to apply new threshold
-            const storedParsedData = JSON.parse(sessionStorage.getItem('parsedData'));
-            if (storedParsedData && resultsContainer.childElementCount > 0) {
-                const domainSizesInput = domainInput.value.trim();
-                const domainSizes = domainSizesInput.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n > 0);
-                if (domainSizes.length > 0) {
-                    displayDomainResults(storedParsedData, domainSizes);
-                } else {
-                    displayFullResults(storedParsedData);
-                }
-            }
-        });
-
-
-        // Template Guide Button Listeners
+        // Event listeners for template guide buttons
         showVerticalTemplateBtn.addEventListener('click', () => {
             templateGuideContainer.classList.remove('hidden');
             verticalTemplateContent.classList.remove('hidden');
             horizontalTemplateContent.classList.add('hidden');
-            updateUIForLanguage(); // Ensure template guide text is in current language
-            document.getElementById('vtHeaderResp1').textContent = languageData[currentLang].templateGuide.vtHeaderResp + ' 1';
-            document.getElementById('vtHeaderResp2').textContent = languageData[currentLang].templateGuide.vtHeaderResp + ' 2';
+            // Update table headers in guide
+            document.getElementById('vtHeaderItem').textContent = languageData[currentLang].templateGuide.vtHeaderItem;
+            document.getElementById('vtHeaderResp1').textContent = languageData[currentLang].templateGuide.vtHeaderResp;
+            document.getElementById('vtHeaderResp2').textContent = languageData[currentJLg].templateGuide.vtHeaderResp;
         });
 
         showHorizontalTemplateBtn.addEventListener('click', () => {
             templateGuideContainer.classList.remove('hidden');
             horizontalTemplateContent.classList.remove('hidden');
             verticalTemplateContent.classList.add('hidden');
-            updateUIForLanguage(); // Ensure template guide text is in current language
+            // Update table headers in guide
+            document.getElementById('htHeaderEmpty').textContent = languageData[currentLang].templateGuide.htHeaderEmpty;
+            document.getElementById('htHeaderItem1').textContent = languageData[currentLang].templateGuide.htHeaderItem;
+            document.getElementById('htHeaderItem2').textContent = languageData[currentLang].templateGuide.htHeaderItem;
         });
 
         closeTemplateGuideBtn.addEventListener('click', () => {
             templateGuideContainer.classList.add('hidden');
         });
 
-        // Initial UI setup
-        updateUIForLanguage();
-        updateLanguageToggleStyles();
-        updateDataOrientationToggleStyles(); // Ensure initial state reflects default 'vertical'
-
+        // Initialize UI with default language
+        updateLanguageUI();
+        updateLangButtonStyles();
     });
     </script>
 </body>
