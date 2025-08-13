@@ -105,13 +105,25 @@
         <p class="text-center text-gray-600 mb-6 text-xl font-bold" id="developerCredit">Developed by Dr. Mazen Badawy – Doctorate of English Teaching & Testing</p>
         
         <p id="subtitle" class="text-center text-gray-600 mb-8">Upload your Excel (XLSX) file with the questionnaire results to view the analysis.</p>
-        <!-- Data Orientation switch button -->
+        <!-- Data Orientation radio buttons -->
         <div class="flex flex-col items-center space-y-4 mb-8">
             <p id="dataOrientationLabel" class="text-gray-700 font-semibold">Data Orientation:</p>
-            <div id="dataOrientationToggle" class="flex rounded-lg shadow-md overflow-hidden cursor-pointer transition-colors duration-300">
-                <span id="orientation-vertical" class="px-6 py-3 font-semibold transition-colors duration-300">Vertical</span>
-                <span id="orientation-horizontal" class="px-6 py-3 font-semibold transition-colors duration-300">Horizontal</span>
-            </div>
+            <fieldset class="flex space-x-4">
+                <div class="flex items-center">
+                    <!-- Swapped checked status and value to inverse functionality -->
+                    <input type="radio" id="orientation-vertical" name="dataOrientation" value="horizontal" class="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out" checked>
+                    <label for="orientation-vertical" class="ml-2 block text-sm font-medium text-gray-700 cursor-pointer">
+                        Vertical
+                    </label>
+                </div>
+                <div class="flex items-center">
+                    <!-- Swapped checked status and value to inverse functionality -->
+                    <input type="radio" id="orientation-horizontal" name="dataOrientation" value="vertical" class="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out">
+                    <label for="orientation-horizontal" class="ml-2 block text-sm font-medium text-gray-700 cursor-pointer">
+                        Horizontal
+                    </label>
+                </div>
+            </fieldset>
         </div>
         
         <!-- File input and loading indicator -->
@@ -280,9 +292,9 @@
         const participantCountDisplay = document.getElementById('participantCountDisplay'); // New element
 
         // Data orientation elements
-        const dataOrientationToggle = document.getElementById('dataOrientationToggle');
-        const orientationVerticalSpan = document.getElementById('orientation-vertical');
-        const orientationHorizontalSpan = document.getElementById('orientation-horizontal');
+        const dataOrientationToggle = document.querySelector('fieldset'); // Changed to select the fieldset
+        const orientationVerticalRadio = document.getElementById('orientation-vertical'); // New reference for radio button
+        const orientationHorizontalRadio = document.getElementById('orientation-horizontal'); // New reference for radio button
         const dataOrientationLabel = document.getElementById('dataOrientationLabel');
 
         // Scale order (Ranking Widget) elements
@@ -319,7 +331,7 @@
                 tableCopied: 'All tables copied to clipboard!',
                 analyzeButton: 'Analyze Data',
                 domainLabel: 'Domain',
-                domainAverages: 'Domain Averages',
+                domainAverages: 'Questionnaire Summary', // Changed
                 tableHeaders: {
                     no: 'No.',
                     item: 'Item',
@@ -371,7 +383,7 @@
                 tableCopied: 'تم نسخ جميع الجداول إلى الحافظة!',
                 analyzeButton: 'تحليل البيانات',
                 domainLabel: 'المجال',
-                domainAverages: 'متوسطات المجال',
+                domainAverages: 'ملخص الاستبيان', // Changed
                 tableHeaders: {
                     no: 'الرقم',
                     item: 'العناصر',
@@ -436,7 +448,7 @@
         ];
 
         let currentLang = 'en';
-        let dataOrientation = 'vertical'; // Default data orientation
+        let dataOrientation = 'horizontal'; // Default data orientation to match 'Vertical' label functionality
         let allCharts = {}; // Store chart instances to destroy them later
 
         /**
@@ -640,11 +652,12 @@
 
             let items;
             let responses;
-            if (dataOrientation === 'vertical') {
+            // The `dataOrientation` value is already inverted in the radio button setup
+            // so we use it directly here.
+            if (dataOrientation === 'vertical') { // If the selected value is 'vertical', it means we want horizontal data processing
                 items = data.slice(1).map(row => row[0]); // First column for items
                 responses = data.slice(1).map(row => row.slice(1)); // Remaining columns for responses
-            } else {
-                // Horizontal
+            } else { // If the selected value is 'horizontal', it means we want vertical data processing
                 items = data[0].slice(1); // First row (from second column) for items
                 responses = transposeArray(data.slice(1).map(row => row.slice(1))); // Transpose responses, excluding ID column
             }
@@ -1239,30 +1252,13 @@
             return validResponsesCount > 0 ? (sum / validResponsesCount) : 0;
         }
         
-        // Event listener for data orientation toggle
-        dataOrientationToggle.addEventListener('click', (e) => {
-            if (e.target.id === 'orientation-vertical') {
-                dataOrientation = 'vertical';
-            } else if (e.target.id === 'orientation-horizontal') {
-                dataOrientation = 'horizontal';
+        // Event listener for data orientation radio buttons
+        dataOrientationToggle.addEventListener('change', (e) => {
+            if (e.target.name === 'dataOrientation') {
+                // The values are swapped in the HTML, so assign directly
+                dataOrientation = e.target.value;
             }
-            updateOrientationButtonStyles();
         });
-
-        function updateOrientationButtonStyles() {
-            if (dataOrientation === 'vertical') {
-                orientationVerticalSpan.classList.add('bg-indigo-600', 'text-white');
-                orientationVerticalSpan.classList.remove('bg-gray-100', 'text-gray-800');
-                orientationHorizontalSpan.classList.remove('bg-indigo-600', 'text-white');
-                orientationHorizontalSpan.classList.add('bg-gray-100', 'text-gray-800');
-            } else {
-                orientationHorizontalSpan.classList.add('bg-indigo-600', 'text-white');
-                orientationHorizontalSpan.classList.remove('bg-gray-100', 'text-gray-800');
-                orientationVerticalSpan.classList.remove('bg-indigo-600', 'text-white');
-                orientationVerticalSpan.classList.add('bg-gray-100', 'text-gray-800');
-            }
-        }
-        updateOrientationButtonStyles();
 
         // Event listener for language toggle
         langToggle.addEventListener('click', (e) => {
@@ -1289,8 +1285,9 @@
             document.getElementById('exportButton').textContent = data.exportButton;
             document.getElementById('copyTableButton').textContent = data.copyTableButton;
             document.getElementById('dataOrientationLabel').textContent = data.dataOrientationLabel;
-            document.getElementById('orientation-vertical').textContent = data.orientationVertical;
-            document.getElementById('orientation-horizontal').textContent = data.orientationHorizontal;
+            // Update radio button labels
+            orientationVerticalRadio.nextElementSibling.textContent = data.orientationVertical;
+            orientationHorizontalRadio.nextElementSibling.textContent = data.orientationHorizontal;
             document.getElementById('scaleOrderTitle').textContent = data.scaleOrderTitle;
             document.getElementById('scaleOrderSubtitle').textContent = data.scaleOrderSubtitle;
             document.getElementById('showVerticalTemplateBtn').textContent = data.templateButtons.vertical;
