@@ -1469,7 +1469,14 @@
                     Array.from(tfoot.querySelectorAll('tr')).forEach(tr => {
                         const footerRowData = [];
                         Array.from(tr.querySelectorAll('td')).forEach(td => {
-                            footerRowData.push(td.textContent.replace(' (%)', '')); // Remove (%) from headers for export
+                            footerRowData.push(td.textContent.replace(' (%)', '')); // Add cell content
+                            const colspan = td.getAttribute('colspan');
+                            if (colspan) {
+                                const span = parseInt(colspan, 10);
+                                for (let i = 1; i < span; i++) {
+                                    footerRowData.push(''); // Add empty cells to account for colspan
+                                }
+                            }
                         });
                         sheetData.push(footerRowData);
                     });
@@ -1621,4 +1628,5 @@
     </script>
 </body>
 </html>
+
 
