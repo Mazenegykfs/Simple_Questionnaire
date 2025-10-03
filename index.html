@@ -79,26 +79,33 @@
     </style>
 </head>
 <body class="p-6 md:p-12">
-    <!-- Language switch button container -->
-    <div style="position: absolute; top: 1.5rem; left: 1.5rem; z-index: 100;" class="flex flex-col space-y-2">
-        <div id="langToggle" class="flex rounded-lg shadow-md overflow-hidden cursor-pointer transition-colors duration-300">
-            <span id="lang-en" class="px-6 py-3 font-semibold transition-colors duration-300">English</span>
-            <span id="lang-ar" class="px-6 py-3 font-semibold transition-colors duration-300">العربية</span>
+    <!-- Left side controls -->
+    <div style="position: absolute; top: 1.5rem; left: 1.5rem; z-index: 100;" class="flex flex-col items-start space-y-4">
+        <!-- Logo at the top left -->
+        <div>
+            <img src="https://placehold.co/80x80/FFFFFF/000000?text=Left+Logo" alt="Left Logo" class="h-20 w-20 shadow-md rounded-full">
         </div>
-        <!-- New template buttons -->
-        <div class="flex space-x-2">
-            <button id="showVerticalTemplateBtn" class="px-4 py-2 bg-gray-300 text-gray-800 text-sm font-semibold rounded-lg shadow-md hover:bg-gray-400 transition-colors duration-300">
-                Vertical Template
-            </button>
-            <button id="showHorizontalTemplateBtn" class="px-4 py-2 bg-gray-300 text-gray-800 text-sm font-semibold rounded-lg shadow-md hover:bg-gray-400 transition-colors duration-300">
-                Horizontal Template
-            </button>
+        <!-- Language switch button container -->
+        <div class="flex flex-col space-y-2">
+            <div id="langToggle" class="flex rounded-lg shadow-md overflow-hidden cursor-pointer transition-colors duration-300">
+                <span id="lang-en" class="px-6 py-3 font-semibold transition-colors duration-300">English</span>
+                <span id="lang-ar" class="px-6 py-3 font-semibold transition-colors duration-300">العربية</span>
+            </div>
+            <!-- New template buttons -->
+            <div class="flex space-x-2">
+                <button id="showVerticalTemplateBtn" class="px-4 py-2 bg-gray-300 text-gray-800 text-sm font-semibold rounded-lg shadow-md hover:bg-gray-400 transition-colors duration-300">
+                    Vertical Template
+                </button>
+                <button id="showHorizontalTemplateBtn" class="px-4 py-2 bg-gray-300 text-gray-800 text-sm font-semibold rounded-lg shadow-md hover:bg-gray-400 transition-colors duration-300">
+                    Horizontal Template
+                </button>
+            </div>
         </div>
     </div>
 
     <!-- Logo at the top right -->
     <div style="position: absolute; top: 1.5rem; right: 1.5rem; z-index: 100;">
-        <img src="00.png" alt="Logo" class="h-20 w-20 shadow-md rounded-full">
+        <img src="https://placehold.co/80x80/FFFFFF/000000?text=Logo" alt="Logo" class="h-20 w-20 shadow-md rounded-full">
     </div>
     <div class="max-w-7xl mx-auto bg-white p-8 rounded-2xl shadow-xl">
         <h1 id="mainTitle" class="text-3xl font-bold text-center mb-1 text-gray-800">Questionnaire Results Analysis</h1>
@@ -734,8 +741,7 @@
                     allItemsWithPositives.push({ item: item, positivesPercentage: itemResponses.length > 0 ? ((positivesSum / itemResponses.length) * 100).toFixed(2) : 0 });
                 });
 
-                // Sort table data by mean in descending order
-                tableData.sort((a, b) => b.mean - a.mean);
+                // tableData.sort((a, b) => b.mean - a.mean); // Removed sorting to maintain original order from Excel file
 
                 // Render the table for this domain
                 renderTable(tableData, domainName, resultsContainer); // Pass domainName directly as title
@@ -842,7 +848,7 @@
                 tableData.push(rowData);
             });
 
-            tableData.sort((a, b) => b.mean - a.mean);
+            // tableData.sort((a, b) => b.mean - a.mean); // Removed sorting to maintain original order from Excel file
 
             renderTable(tableData, 'full', resultsContainer);
 
@@ -1516,7 +1522,7 @@
             allTables.forEach(table => {
                 const titleElement = table.closest('.table-container').querySelector('h2');
                 const tableTitle = titleElement ? titleElement.textContent.trim() : 'Table';
-                combinedText += titleElement + '\n\n'; // Add title
+                combinedText += tableTitle + '\n\n'; // Add title
 
                 // Get headers
                 Array.from(table.querySelectorAll('thead th')).forEach((th, index) => {
@@ -1615,3 +1621,4 @@
     </script>
 </body>
 </html>
+
