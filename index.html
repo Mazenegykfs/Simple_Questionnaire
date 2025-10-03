@@ -1429,6 +1429,23 @@
             const workbook = XLSX.utils.book_new();
             const sheetData = [];
 
+            // Helper function to process cell content, converting percentages and numbers
+            const processCell = (cellContent) => {
+                const trimmedContent = String(cellContent).trim();
+                if (trimmedContent.endsWith('%')) {
+                    const num = parseFloat(trimmedContent.replace('%', ''));
+                    // Return as a decimal for Excel (e.g., 95.5% -> 0.955)
+                    return isNaN(num) ? trimmedContent : num / 100;
+                }
+                const num = parseFloat(trimmedContent);
+                // Check if it's a standalone number string
+                if (!isNaN(num) && isFinite(trimmedContent) && trimmedContent !== '') {
+                    return num;
+                }
+                // Otherwise, return as string
+                return cellContent;
+            };
+
             // Add filename and participant count at the top of the export
             if (!fileNameDisplay.classList.contains('hidden')) {
                 sheetData.push([fileNameDisplay.textContent]);
@@ -1450,7 +1467,7 @@
                 // Get table headers
                 const headerRow = [];
                 Array.from(table.querySelectorAll('thead th')).forEach(th => {
-                    headerRow.push(th.textContent.replace(' (%)', '')); // Remove (%) from headers for export
+                    headerRow.push(th.textContent.replace(' (%)', ''));
                 });
                 sheetData.push(headerRow);
 
@@ -1458,7 +1475,7 @@
                 Array.from(table.querySelectorAll('tbody tr')).forEach(tr => {
                     const rowData = [];
                     Array.from(tr.querySelectorAll('td')).forEach(td => {
-                        rowData.push(td.textContent);
+                        rowData.push(processCell(td.textContent));
                     });
                     sheetData.push(rowData);
                 });
@@ -1469,12 +1486,12 @@
                     Array.from(tfoot.querySelectorAll('tr')).forEach(tr => {
                         const footerRowData = [];
                         Array.from(tr.querySelectorAll('td')).forEach(td => {
-                            footerRowData.push(td.textContent.replace(' (%)', '')); // Add cell content
+                            footerRowData.push(processCell(td.textContent)); // Process cell for numbers
                             const colspan = td.getAttribute('colspan');
                             if (colspan) {
                                 const span = parseInt(colspan, 10);
                                 for (let i = 1; i < span; i++) {
-                                    footerRowData.push(''); // Add empty cells to account for colspan
+                                    footerRowData.push(''); // Add empty cells for colspan
                                 }
                             }
                         });
@@ -1491,19 +1508,32 @@
 
             if (highPositivesDiv) {
                 sheetData.push([highPositivesDiv.querySelector('h3').textContent]);
-                // Iterate over list items and add their text content
                 Array.from(highPositivesDiv.querySelectorAll('li')).forEach(li => sheetData.push([li.textContent]));
                 sheetData.push([]); // Spacer
             }
             if (lowPositivesDiv) {
                 sheetData.push([lowPositivesDiv.querySelector('h3').textContent]);
-                // Iterate over list items and add their text content
                 Array.from(lowPositivesDiv.querySelectorAll('li')).forEach(li => sheetData.push([li.textContent]));
                 sheetData.push([]); // Spacer
             }
 
             if (sheetData.length > 0) {
                 const ws = XLSX.utils.aoa_to_sheet(sheetData);
+
+                // Add number formatting for percentage columns
+                const range = XLSX.utils.decode_range(ws['!ref']);
+                for (let R = range.s.r; R <= range.e.r; ++R) {
+                    for (let C = range.s.c; C <= range.e.c; ++C) {
+                        const cell_address = { c: C, r: R };
+                        const cell_ref = XLSX.utils.encode_cell(cell_address);
+                        const cell = ws[cell_ref];
+                        // Apply percentage format to cells that are numbers between 0 and 1.1 (allowing for rounding)
+                        if (cell && cell.t === 'n' && cell.v >= 0 && cell.v <= 1.1) {
+                             cell.z = '0.00%'; // Apply percentage format
+                        }
+                    }
+                }
+
                 XLSX.utils.book_append_sheet(workbook, ws, 'Analysis Results');
             }
 
@@ -1628,7 +1658,6 @@
     </script>
 </body>
 </html>
-
 
 
 
