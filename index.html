@@ -518,7 +518,7 @@
                         showMessage(languageData[currentLang].emptyFile, 'error');
                         return;
                     }
-                                        
+                                    
                     sessionStorage.setItem('parsedData', JSON.stringify(parsedData));
 
                     const identifiedResponses = new Set();
@@ -887,7 +887,8 @@
             tableDiv.classList.add('table-container', 'mb-8');
             tableDiv.innerHTML = `
                 <h2 class="text-xl font-bold text-center mb-4 text-gray-800">${title}</h2>
-                <div class="overflow-x-auto rounded-lg shadow-md border border-gray-200">
+                <!-- Removed overflow-x-auto from this div -->
+                <div class="rounded-lg shadow-md border border-gray-200">
                     <table class="min-w-full divide-y divide-gray-200" id="resultsTable-${domainId}">
                         <thead class="bg-gray-100">
                             <tr>
@@ -912,7 +913,8 @@
                                 return `
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap text-left font-medium">${index + 1}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-left font-medium">${row.item}</td>
+                                    <!-- Removed whitespace-nowrap from this cell -->
+                                    <td class="px-6 py-4 text-left font-medium">${row.item}</td>
                                     ${cells}
                                     <td class="px-6 py-4 whitespace-nowrap text-left font-semibold">${rowPercentagesSum.toFixed(2)}%</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-left font-semibold text-blue-600">${positivesPercentage.toFixed(2)}%</td>
@@ -959,7 +961,8 @@
             tableDiv.classList.add('table-container', 'mb-8');
             tableDiv.innerHTML = `
                 <h2 class="text-xl font-bold text-center mb-4 text-gray-800">${languageData[currentLang].domainAverages}</h2>
-                <div class="overflow-x-auto rounded-lg shadow-md border border-gray-200">
+                <!-- Removed overflow-x-auto from this div -->
+                <div class="rounded-lg shadow-md border border-gray-200">
                     <table class="min-w-full divide-y divide-gray-200" id="domainAveragesTable">
                         <thead class="bg-gray-100">
                             <tr>
@@ -987,7 +990,8 @@
                                 return `
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap text-left font-medium">${index + 1}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-left font-medium">${domain.domainName}</td>
+                                    <!-- Removed whitespace-nowrap from this cell -->
+                                    <td class="px-6 py-4 text-left font-medium">${domain.domainName}</td>
                                     ${cells}
                                     <td class="px-6 py-4 whitespace-nowrap text-left font-semibold">${rowPercentagesSum.toFixed(2)}%</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-left">${positivesPercentage.toFixed(2)}%</td>
@@ -1099,7 +1103,7 @@
                         },
                         datalabels: { // Data labels plugin configuration
                             anchor: 'center', // Changed to center
-                            align: 'center',   // Changed to center
+                            align: 'center',    // Changed to center
                             color: 'black',
                             font: {
                                 weight: 'bold'
@@ -1203,7 +1207,7 @@
                         },
                         datalabels: { // Data labels plugin configuration
                             anchor: 'center', // Changed to center
-                            align: 'center',   // Changed to center
+                            align: 'center',    // Changed to center
                             color: 'black',
                             font: {
                                 weight: 'bold'
@@ -1658,6 +1662,3 @@
     </script>
 </body>
 </html>
-
-
-
